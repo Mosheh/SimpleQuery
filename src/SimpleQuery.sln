@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleQuery", "SimpleQuery\SimpleQuery.csproj", "{6E2CE2E9-8AF1-4D99-91A7-CDDF6FF90E7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleQuery.Tests", "SimpleQuery.Tests\SimpleQuery.Tests.csproj", "{90FF2A92-A22D-4077-88AD-14115030C07A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6E2CE2E9-8AF1-4D99-91A7-CDDF6FF90E7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E2CE2E9-8AF1-4D99-91A7-CDDF6FF90E7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E2CE2E9-8AF1-4D99-91A7-CDDF6FF90E7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E2CE2E9-8AF1-4D99-91A7-CDDF6FF90E7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90FF2A92-A22D-4077-88AD-14115030C07A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90FF2A92-A22D-4077-88AD-14115030C07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90FF2A92-A22D-4077-88AD-14115030C07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90FF2A92-A22D-4077-88AD-14115030C07A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9A334AA4-A3E6-44B0-80C8-7BCA569D3AD7}
+	EndGlobalSection
+EndGlobal
