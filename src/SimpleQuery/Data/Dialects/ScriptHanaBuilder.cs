@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace SimpleQuery.Data.Dialects
 {
@@ -225,5 +226,6 @@ namespace SimpleQuery.Data.Dialects
                     return "VARCHAR(255)";
             }
         }
+
     }
 }

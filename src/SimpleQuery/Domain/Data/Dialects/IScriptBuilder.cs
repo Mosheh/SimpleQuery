@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Reflection;
 using System.Text;
+using System.Transactions;
 
 namespace SimpleQuery.Domain.Data.Dialects
 {

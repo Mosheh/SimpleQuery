@@ -4,6 +4,7 @@ using SimpleQuery.Domain.Data.Dialects;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Transactions;
 
 namespace SimpleQuery.Tests
 {
@@ -31,7 +32,7 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 20, ValorTotalNotasFiscais = 2000.95, Credito = 10, UltimoValorDeCompra = 1000.95m };
 
             var sqlDelete = builder.GetInsertCommand<Cliente>(cliente);
-            var resultadoEsperado = "insert into [Cliente] ([Nome], [Ativo], [TotalPedidos], [ValorTotalNotasFiscais], [Credito], [UltimoValorDeCompra]) values ('Moisés', true, 20, 2000.95, 10, 1000.95)";
+            var resultadoEsperado = "insert into [Cliente] ([Nome], [Ativo], [TotalPedidos], [ValorTotalNotasFiscais], [Credito], [UltimoValorDeCompra]) values ('Moisés', 1, 20, 2000.95, 10, 1000.95)";
 
             Assert.AreEqual(resultadoEsperado, sqlDelete);
         }
@@ -44,7 +45,7 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = 1035.22m };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', set [Ativo]=true, set [TotalPedidos]=55, set [ValorTotalNotasFiscais]=1000.55, set [Credito]=2000.53, set [UltimoValorDeCompra]=1035.22 where Id=1";
+            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', set [Ativo]=1, set [TotalPedidos]=55, set [ValorTotalNotasFiscais]=1000.55, set [Credito]=2000.53, set [UltimoValorDeCompra]=1035.22 where Id=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
@@ -59,7 +60,7 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = null };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', set [Ativo]=true, set [TotalPedidos]=55, set [ValorTotalNotasFiscais]=1000.55, set [Credito]=2000.53, set [UltimoValorDeCompra]=null where Id=1";
+            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', set [Ativo]=1, set [TotalPedidos]=55, set [ValorTotalNotasFiscais]=1000.55, set [Credito]=2000.53, set [UltimoValorDeCompra]=null where Id=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
@@ -82,6 +83,7 @@ namespace SimpleQuery.Tests
         {
             var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
             connection.Open();
+            
             var trans = connection.BeginTransaction();
             using (var conn = connection)
             {
@@ -95,7 +97,7 @@ namespace SimpleQuery.Tests
                 var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
 
-                trans.Rollback();                
+                trans.Rollback();
             }
         }
 
@@ -104,27 +106,30 @@ namespace SimpleQuery.Tests
         {
             var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
             connection.Open();
-            var trans = connection.BeginTransaction();
-            using (var conn = connection)
+
+            using (var scope = new TransactionScope())
             {
-                IScriptBuilder builder = new ScriptSqlServerBuilder();
+                using (var conn = connection)
+                {
+                    IScriptBuilder builder = new ScriptSqlServerBuilder();
 
-                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
-                var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
+                    var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+                    var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
 
-                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
-                var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
-                var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
-                builder.Execute(createTableScript, conn, trans);
-                builder.Execute(insertScript1, conn, trans);
-                builder.Execute(insertScript2, conn, trans);
+                    var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                    var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
+                    var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
+                    builder.Execute(createTableScript, conn);
+                    builder.Execute(insertScript1, conn);
+                    builder.Execute(insertScript2, conn);
 
-                var clientes = conn.GetAll<Cliente>(cliente);
-                Assert.AreEqual(2, clientes.Count());
-                Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
-                Assert.AreEqual("José", clientes.ToList()[1].Nome);
+                    var clientes = conn.GetAll<Cliente>(cliente);
+                    Assert.AreEqual(2, clientes.Count());
+                    Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
+                    Assert.AreEqual("José", clientes.ToList()[1].Nome);
 
-                trans.Rollback();
+                    conn.Execute("drop table [Cliente]");
+                }
             }
         }
 
