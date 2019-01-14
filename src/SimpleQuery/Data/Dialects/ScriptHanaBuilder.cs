@@ -1,7 +1,9 @@
-﻿using SimpleQuery.Domain.Data.Dialects;
+﻿using SimpleQuery.Domain.Data;
+using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,9 +13,13 @@ namespace SimpleQuery.Data.Dialects
 {
     public class ScriptHanaBuilder : ScriptCommon, IScriptBuilder
     {
-        public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection)
+        public Domain.Data.DbServerType DbServerType => Domain.Data.DbServerType.Hana;
+
+        public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction=null)
         {
             var command = dbConnection.CreateCommand();
+            if (dbTransaction != null) command.Transaction = dbTransaction;
+
             command.CommandText = commandText;
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
@@ -25,9 +31,11 @@ namespace SimpleQuery.Data.Dialects
             return reader;
         }
 
-        public void Execute(string commandText, IDbConnection dbConnection)
+        public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
             var command = dbConnection.CreateCommand();
+            if (dbTransaction != null)
+                command.Transaction = dbTransaction;
             command.CommandText = commandText;
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
@@ -82,7 +90,7 @@ namespace SimpleQuery.Data.Dialects
                 if (keyName == item && !includeKey)
                     continue;
 
-                strBuilderSql.Append($"{DataFormatter.GetValue(item, obj)}");
+                strBuilderSql.Append($"{DataFormatter.GetValue(item, obj, this.DbServerType)}");
 
                 if (item != allProperties.Last())
                     strBuilderSql.Append(", ");
@@ -94,7 +102,7 @@ namespace SimpleQuery.Data.Dialects
             return sql;
         }
 
-        public object GetLastId<T>(T model, IDbConnection dbConnection)
+        public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
             var entityName = model.GetType().Name;
             var propertyKey = GetKeyProperty(model.GetType().GetProperties());
@@ -149,12 +157,12 @@ namespace SimpleQuery.Data.Dialects
                 if (keyProperty == item)
                     continue;
 
-                strBuilderSql.Append($"set \"{item.Name}\"={DataFormatter.GetValue(item, obj)}");
+                strBuilderSql.Append($"set \"{item.Name}\"={DataFormatter.GetValue(item, obj, this.DbServerType)}");
 
                 if (item != allProperties.Last())
                     strBuilderSql.Append(", ");
             }
-            strBuilderSql.Append($" where {keyProperty.Name}={DataFormatter.GetValue(keyProperty, obj)}");
+            strBuilderSql.Append($" where {keyProperty.Name}={DataFormatter.GetValue(keyProperty, obj, this.DbServerType)}");
 
             var sql = strBuilderSql.ToString();
             return sql;
@@ -214,7 +222,7 @@ namespace SimpleQuery.Data.Dialects
                     else
                         return "INTEGER NOT NULL";
                 default:
-                    return "VARCHAR (255)";
+                    return "VARCHAR(255)";
             }
         }
     }

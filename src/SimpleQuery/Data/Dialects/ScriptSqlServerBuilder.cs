@@ -1,7 +1,9 @@
-﻿using SimpleQuery.Domain.Data.Dialects;
+﻿using SimpleQuery.Domain.Data;
+using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -12,14 +14,37 @@ namespace SimpleQuery.Data.Dialects
 {
     public class ScriptSqlServerBuilder : ScriptCommon, IScriptBuilder
     {
-        public IDataReader ExecuteReader(string command, IDbConnection dbConnection)
+        public Domain.Data.DbServerType DbServerType => Domain.Data.DbServerType.SqlServer;
+
+        public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
-            throw new NotImplementedException();
+            var command = dbConnection.CreateCommand();
+            if (dbTransaction != null) command.Transaction = dbTransaction;
+
+            command.CommandText = commandText;
+
+            var wasClosed = dbConnection.State == ConnectionState.Closed;
+            if (wasClosed) dbConnection.Open();
+            var reader = command.ExecuteReader();
+
+            if (wasClosed) dbConnection.Close();
+
+            return reader;
         }
 
-        public void Execute(string command, IDbConnection dbConnection)
+        public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
-            throw new NotImplementedException();
+            var command = dbConnection.CreateCommand();
+            if (dbTransaction != null)
+                command.Transaction = dbTransaction;
+            command.CommandText = commandText;
+
+            var wasClosed = dbConnection.State == ConnectionState.Closed;
+            if (wasClosed) dbConnection.Open();
+            var rowsCount = command.ExecuteNonQuery();
+            var dataTable = new DataTable();
+            Console.WriteLine($"{rowsCount} affected rows");
+            if (wasClosed) dbConnection.Close();
         }
 
         public string GetDeleteCommand<T>(T obj, object key) where T : class, new()
@@ -66,7 +91,7 @@ namespace SimpleQuery.Data.Dialects
                 if (keyName == item && !includeKey)
                     continue;
 
-                strBuilderSql.Append($"{DataFormatter.GetValue(item, obj)}");
+                strBuilderSql.Append($"{DataFormatter.GetValue(item, obj, this.DbServerType)}");
 
                 if (item != allProperties.Last())
                     strBuilderSql.Append(", ");
@@ -78,10 +103,20 @@ namespace SimpleQuery.Data.Dialects
             return sql;
         }
 
-        public object GetLastId<T>(T model, IDbConnection dbConnection)
+        public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
-            var reader = ExecuteReader("SELECT SCOPE_IDENTITY()", dbConnection);
-            return reader.GetInt32(0);
+            var reader = ExecuteReader("SELECT SCOPE_IDENTITY()", dbConnection, transaction);
+            if (reader.Read())
+            {
+                var value = reader.GetDecimal(0);
+                reader.Close();
+                return value;
+            }
+            else
+            {
+                reader.Close();
+                return 0;
+            }
         }
 
         public string GetSelectCommand<T>(T obj) where T : class, new()
@@ -119,12 +154,12 @@ namespace SimpleQuery.Data.Dialects
                 if (keyProperty == item)
                     continue;
 
-                strBuilderSql.Append($"set [{item.Name}]={DataFormatter.GetValue(item, obj)}");
+                strBuilderSql.Append($"set [{item.Name}]={DataFormatter.GetValue(item, obj, this.DbServerType)}");
 
                 if (item != allProperties.Last())
-                    strBuilderSql.Append(", ");                                    
+                    strBuilderSql.Append(", ");
             }
-            strBuilderSql.Append($" where {keyProperty.Name}={DataFormatter.GetValue(keyProperty, obj)}");
+            strBuilderSql.Append($" where {keyProperty.Name}={DataFormatter.GetValue(keyProperty, obj, this.DbServerType)}");
 
             var sql = strBuilderSql.ToString();
             return sql;
@@ -132,7 +167,66 @@ namespace SimpleQuery.Data.Dialects
 
         public string GetCreateTableCommand<T>(T obj) where T : class, new()
         {
-            throw new NotImplementedException();
+            var allProperties = obj.GetType().GetProperties();
+            var entityName = obj.GetType().Name;
+
+            var keyProperty = GetKeyProperty(allProperties);
+
+            var strBuilderSql = new StringBuilder($"create table [{entityName}] (");
+            foreach (var item in allProperties)
+            {
+                if (keyProperty == item)
+                    strBuilderSql.Append($"[{item.Name}] {GetTypeSqlServer(item)} identity");
+                else
+                    strBuilderSql.Append($"[{item.Name}] {GetTypeSqlServer(item)}");
+
+                if (item != allProperties.Last())
+                {
+                    strBuilderSql.Append(", ");
+                }
+                else
+                {
+                    if (keyProperty != null && keyProperty.PropertyType.Name.Equals("Int32"))
+                        strBuilderSql.Append($", primary key ([{keyProperty.Name}])");
+                    strBuilderSql.Append(")");
+                }
+            }
+
+
+            var sql = strBuilderSql.ToString();
+            return sql;
+        }
+
+        private string GetTypeSqlServer(PropertyInfo item)
+        {
+            switch (item.PropertyType.Name)
+            {
+                case "String":
+                    return "nvarchar(255)";
+                case "Int32":
+                    return "int not null";
+                case "Int64":
+                    return "bigint";
+                case "Byte[]":
+                    return "varbinary";
+                case "Boolean":
+                    return "bit";
+                case "Decimal":
+                    return "decimal(18,6)";
+                case "Double":
+                    return "float";
+                case "Nullable`1":
+                    if (item.PropertyType.AssemblyQualifiedName.Contains("System.Int32"))
+                        return "int";
+                    else if (item.PropertyType.AssemblyQualifiedName.Contains("System.Boolean"))
+                        return "bit";
+                    else if (item.PropertyType.AssemblyQualifiedName.Contains("System.Decimal"))
+                        return "decimal(18,6)";
+                    else
+                        return "int not null";
+                default:
+                    return "nvarchar(255)";
+            }
         }
     }
 }

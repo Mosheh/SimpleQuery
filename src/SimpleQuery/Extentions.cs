@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Transactions;
 
 namespace SimpleQuery
 {
@@ -15,7 +16,7 @@ namespace SimpleQuery
     {
         private static readonly ConcurrentDictionary<RuntimeTypeHandle, string> GetQueries = new ConcurrentDictionary<RuntimeTypeHandle, string>();
 
-        public static int InsertRereturnId<T>(this IDbConnection dbConnection, T model)
+        public static int InsertRereturnId<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
             where T : class, new()
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
@@ -23,14 +24,17 @@ namespace SimpleQuery
             if (wasClosed) dbConnection.Open();
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection.ConnectionString);
-            var insertCommand = scripBuilder.GetInsertCommand<T>(model, true);
+            var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
 
             var command = dbConnection.CreateCommand();
-            command.CommandText = insertCommand;
-            command.ExecuteNonQuery();
 
-            var propertyKey = scripBuilder.GetKeyProperty(model.GetType().GetProperties());
-            var lastId = scripBuilder.GetLastId<T>(model, dbConnection);
+            if (dbTransaction != null) command.Transaction = dbTransaction;
+
+            command.CommandText = insertCommand;
+            var rowsCount = command.ExecuteNonQuery();
+            Console.WriteLine($"{rowsCount} affected rows");
+
+            var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
 
             if (wasClosed) dbConnection.Close();
 
@@ -44,13 +48,15 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Open();
 
+            var currentTransaction = Transaction.Current;
+
             var type = typeof(T);
             var cacheType = typeof(List<T>);
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection.ConnectionString);
             var selectScript = scripBuilder.GetSelectCommand<T>(model);
 
-            var reader = scripBuilder.ExecuteReader(selectScript, dbConnection);
+            var reader = scripBuilder.ExecuteReader(selectScript, dbConnection, currentTransaction);
             var listModel = new List<T>();
 
             var dataTable = new DataTable();
@@ -64,6 +70,8 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Close();
 
+            reader.Close();
+
             return listModel;
         }
 
@@ -76,7 +84,7 @@ namespace SimpleQuery
             {
                 if (row.Table.Columns.Cast<DataColumn>().Any(c => c.ColumnName == item.Name))
                 {
-                    item.SetValue(model, row[item.Name]==DBNull.Value? null: row[item.Name]);
+                    item.SetValue(model, row[item.Name] == DBNull.Value ? null : row[item.Name]);
                 }
             }
 

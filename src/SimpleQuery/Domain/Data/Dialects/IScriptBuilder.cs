@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Reflection;
 using System.Text;
 
@@ -18,10 +19,11 @@ namespace SimpleQuery.Domain.Data.Dialects
 
         string GetCreateTableCommand<T>(T obj) where T : class, new();
 
-        object GetLastId<T>(T model, IDbConnection dbConnection);
+        object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null);
 
         PropertyInfo GetKeyProperty(PropertyInfo[] allProperties);
-        IDataReader ExecuteReader(string command, IDbConnection dbConnection);
-        void Execute(string command, IDbConnection dbConnection);
+        IDataReader ExecuteReader(string command, IDbConnection dbConnection, IDbTransaction transaction=null);
+        void Execute(string command, IDbConnection dbConnection, IDbTransaction transaction = null);
+        DbServerType DbServerType { get; }
     }
 }

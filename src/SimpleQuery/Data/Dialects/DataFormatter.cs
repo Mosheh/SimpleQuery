@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleQuery.Domain.Data;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -23,16 +24,17 @@ namespace SimpleQuery.Data.Dialects
                 return hash;
             }
         }
-        public static  object GetValue<T>(PropertyInfo item, T obj) where T : class, new()
+        public static object GetValue<T>(PropertyInfo item, T obj, DbServerType dbServerType) where T : class, new()
         {
-
             switch (item.PropertyType.Name)
             {
-
                 case "String":
                     return $"'{item.GetValue(obj)}'";
                 case "Boolean":
-                    return ((bool)item.GetValue(obj)) == true ? "true" : "false";
+                    if (dbServerType == DbServerType.Hana)
+                        return ((bool)item.GetValue(obj)) == true ? "true" : "false";
+                    else
+                        return ((bool)item.GetValue(obj)) == true ? "1" : "0";
                 case "Nullable`1":
                     return GetNullableValue(item, obj);
                 case "Double":
@@ -50,7 +52,7 @@ namespace SimpleQuery.Data.Dialects
 
         }
 
-        private static  object GetNullableValue<T>(PropertyInfo item, T obj) where T : class, new()
+        private static object GetNullableValue<T>(PropertyInfo item, T obj) where T : class, new()
         {
             var nfiDecimal = new NumberFormatInfo();
             nfiDecimal.NumberDecimalSeparator = ".";

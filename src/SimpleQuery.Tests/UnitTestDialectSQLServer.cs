@@ -1,6 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleQuery.Data.Dialects;
 using SimpleQuery.Domain.Data.Dialects;
+using System.Configuration;
+using System.Data.SqlClient;
+using System.Linq;
 
 namespace SimpleQuery.Tests
 {
@@ -72,6 +75,70 @@ namespace SimpleQuery.Tests
             var resultadoEsperado = "select [Id], [Nome], [Ativo], [TotalPedidos], [ValorTotalNotasFiscais], [Credito], [UltimoValorDeCompra] from [Cliente]";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
+        }
+
+        [TestMethod]
+        public void TestInsertOperationSqlServer()
+        {
+            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            connection.Open();
+            var trans = connection.BeginTransaction();
+            using (var conn = connection)
+            {
+                IScriptBuilder builder = new ScriptSqlServerBuilder();
+
+                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+
+                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                builder.Execute(createTableScript, conn, trans);
+
+                var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
+                Assert.AreEqual(1, lastId);
+
+                trans.Rollback();                
+            }
+        }
+
+        [TestMethod]
+        public void TestSelectOperationSqlServer()
+        {
+            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            connection.Open();
+            var trans = connection.BeginTransaction();
+            using (var conn = connection)
+            {
+                IScriptBuilder builder = new ScriptSqlServerBuilder();
+
+                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+                var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
+
+                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
+                var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
+                builder.Execute(createTableScript, conn, trans);
+                builder.Execute(insertScript1, conn, trans);
+                builder.Execute(insertScript2, conn, trans);
+
+                var clientes = conn.GetAll<Cliente>(cliente);
+                Assert.AreEqual(2, clientes.Count());
+                Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
+                Assert.AreEqual("José", clientes.ToList()[1].Nome);
+
+                trans.Rollback();
+            }
+        }
+
+        [TestMethod]
+        public void TestCreateTableSqlServer()
+        {
+            IScriptBuilder builder = new ScriptSqlServerBuilder();
+
+            var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+
+            var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+            var resultadoEsperado = "create table [Cliente] ([Id] int not null identity, [Nome] nvarchar(255), [Ativo] bit, [TotalPedidos] int, [ValorTotalNotasFiscais] float, [Credito] decimal(18,6), [UltimoValorDeCompra] decimal(18,6), primary key ([Id]))";
+
+            Assert.AreEqual(resultadoEsperado, createTableScript);
         }
 
         public class Cliente

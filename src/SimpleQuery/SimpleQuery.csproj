@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,6 +46,7 @@
     <Compile Include="Data\Dialects\ScriptCommon.cs" />
     <Compile Include="Data\Dialects\ScriptHanaBuilder.cs" />
     <Compile Include="Data\Dialects\ScriptSqlServerBuilder.cs" />
+    <Compile Include="Domain\Data\DbType.cs" />
     <Compile Include="Domain\Data\Dialects\IScriptBuilder.cs" />
     <Compile Include="Extentions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
