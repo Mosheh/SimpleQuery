@@ -63,6 +63,21 @@ namespace SimpleQuery.Tests
             conn.Execute("drop table \"Cliente\"");
         }
 
+        [TestMethod]
+        public void PostGresInsertModelFillingId()
+        {
+            var conn = new Npgsql.NpgsqlConnection(ConfigurationManager.ConnectionStrings["postgres"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            conn.Execute(createTableScript);
+            conn.Insert<Cliente>(cliente);
+            Assert.AreEqual(1, cliente.Id);
+            conn.Execute("drop table \"Cliente\"");
+        }
+
 
         [TestMethod]
         public void PostGresSelectModel()

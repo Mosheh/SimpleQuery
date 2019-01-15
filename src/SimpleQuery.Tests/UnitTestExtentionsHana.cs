@@ -46,6 +46,21 @@ namespace SimpleQuery.Tests
             conn.Execute("drop table \"Cliente\"");
         }
 
+        [TestMethod]
+        public void SapHanaInsertModelFillIdModel()
+        {
+            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            conn.Execute(createTableScript);
+            conn.Insert<Cliente>(cliente);
+            Assert.AreEqual(1, cliente.Id);
+            conn.Execute("drop table \"Cliente\"");
+        }
+
 
         [TestMethod]
         public void SapHanaSelectModel()

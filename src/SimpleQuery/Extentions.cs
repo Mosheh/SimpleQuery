@@ -41,6 +41,37 @@ namespace SimpleQuery
             return Convert.ToInt32(lastId);
         }
 
+        public static T Insert<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
+           where T : class, new()
+        {
+            var wasClosed = dbConnection.State == ConnectionState.Closed;
+
+            if (wasClosed) dbConnection.Open();
+
+            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+            var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
+
+            var command = dbConnection.CreateCommand();
+
+            if (dbTransaction != null) command.Transaction = dbTransaction;
+
+            command.CommandText = insertCommand;
+            var rowsCount = command.ExecuteNonQuery();
+            Console.WriteLine($"{rowsCount} affected rows");
+
+            var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
+
+            if (wasClosed) dbConnection.Close();
+
+            var keyProperty = scripBuilder.GetKeyPropertyModel<T>();
+            if (keyProperty != null)
+            {
+                var convertedValue = Convert.ChangeType(lastId, keyProperty.PropertyType);
+                keyProperty.SetValue(model, convertedValue);
+            }
+            return model;
+        }
+
         public static void Update<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
            where T : class, new()
         {

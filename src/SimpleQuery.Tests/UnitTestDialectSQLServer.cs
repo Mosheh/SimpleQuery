@@ -129,7 +129,7 @@ namespace SimpleQuery.Tests
                     Assert.AreEqual("José", clientes.ToList()[1].Nome);
 
                     conn.Execute("drop table [Cliente]");
-                }
+                }                
             }
         }
 

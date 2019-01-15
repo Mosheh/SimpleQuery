@@ -101,7 +101,7 @@ namespace SimpleQuery.Tests
                 var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
 
-                //conn.Execute("drop table \"Cliente\"");
+                conn.Execute("drop table \"Cliente\"");
                 //conn.Execute("drop sequence \"sequence_cliente_id\"");
             }
         }

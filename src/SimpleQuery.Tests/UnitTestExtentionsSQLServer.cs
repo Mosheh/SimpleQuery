@@ -34,7 +34,9 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SQLServerInsertModel()
         {
+            
             var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            
             var scriptBuilder = conn.GetScriptBuild();
 
             var cliente = new Cliente() { Nome = "Miranda" };
@@ -43,6 +45,21 @@ namespace SimpleQuery.Tests
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
             Assert.AreEqual(1, id);
+            conn.Execute("drop table [Cliente]");
+        }
+
+        [TestMethod]
+        public void SQLServerInsertModelFillingId()
+        {
+            var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            conn.Execute(createTableScript);
+            conn.Insert<Cliente>(cliente);
+            Assert.AreEqual(1, cliente.Id);
             conn.Execute("drop table [Cliente]");
         }
 
