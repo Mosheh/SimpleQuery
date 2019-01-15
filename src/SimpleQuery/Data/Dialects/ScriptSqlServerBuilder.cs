@@ -228,5 +228,10 @@ namespace SimpleQuery.Data.Dialects
                     return "nvarchar(255)";
             }
         }
+
+        public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null, string sequenceName = null)
+        {
+            return GetLastId<T>(model, dbConnection, transaction);
+        }
     }
 }

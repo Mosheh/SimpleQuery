@@ -23,7 +23,7 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Open();
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection.ConnectionString);
+            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
             var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
 
             var command = dbConnection.CreateCommand();
@@ -40,6 +40,55 @@ namespace SimpleQuery
 
             return Convert.ToInt32(lastId);
         }
+
+        public static void Update<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
+           where T : class, new()
+        {
+            var wasClosed = dbConnection.State == ConnectionState.Closed;
+
+            if (wasClosed) dbConnection.Open();
+
+            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+            var updateCommandText = scripBuilder.GetUpdateCommand<T>(model);
+
+            var command = dbConnection.CreateCommand();
+
+            if (dbTransaction != null) command.Transaction = dbTransaction;
+
+            command.CommandText = updateCommandText;
+            var rowsCount = command.ExecuteNonQuery();
+            Console.WriteLine($"{rowsCount} affected rows");            
+
+            if (wasClosed) dbConnection.Close();
+            
+        }
+
+        public static void Delete<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
+          where T : class, new()
+        {
+            var wasClosed = dbConnection.State == ConnectionState.Closed;
+
+            if (wasClosed) dbConnection.Open();
+
+            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+            var keyProperty = scripBuilder.GetKeyPropertyModel<T>();
+            if (keyProperty == null)
+                throw new Exception("Can't detarminated key property");
+            var keyValue = keyProperty.GetValue(model);
+            var deleteCommandText = scripBuilder.GetDeleteCommand<T>(model, keyValue);
+
+            var command = dbConnection.CreateCommand();
+
+            if (dbTransaction != null) command.Transaction = dbTransaction;
+
+            command.CommandText = deleteCommandText;
+            var rowsCount = command.ExecuteNonQuery();
+            Console.WriteLine($"{rowsCount} affected rows");
+
+            if (wasClosed) dbConnection.Close();
+
+        }
+
         /// <summary>
         /// Execute text command in database and return coutn affected rows
         /// </summary>
@@ -52,7 +101,7 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Open();
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection.ConnectionString);
+            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
 
             var command = dbConnection.CreateCommand();
             command.CommandText = commandText;
@@ -61,8 +110,9 @@ namespace SimpleQuery
             Console.WriteLine($"{rowsCount} affected rows");
 
             return rowsCount;
-        }
-        public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection, T model)
+        }       
+
+        public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection)
            where T : class, new()
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
@@ -72,8 +122,8 @@ namespace SimpleQuery
             var type = typeof(T);
             var cacheType = typeof(List<T>);
 
-            IScriptBuilder scriptBuilder = GetScriptBuild(dbConnection.ConnectionString);
-            var selectScript = scriptBuilder.GetSelectCommand<T>(model);
+            IScriptBuilder scriptBuilder = GetScriptBuild(dbConnection);
+            var selectScript = scriptBuilder.GetSelectCommand<T>(new T());
 
             var reader = scriptBuilder.ExecuteReader(selectScript, dbConnection);
             var list = GetTypedList<T>(reader);
@@ -111,7 +161,7 @@ namespace SimpleQuery
             var type = typeof(T);
             var cacheType = typeof(List<T>);
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection.ConnectionString);
+            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
             var selectScript = scripBuilder.GetSelectCommand<T>(model);
 
             var reader = scripBuilder.ExecuteReader(selectScript, dbConnection);
@@ -149,13 +199,17 @@ namespace SimpleQuery
             return model;
         }
 
-        private static IScriptBuilder GetScriptBuild(string connectionString)
+        public static IScriptBuilder GetScriptBuild(this IDbConnection dbConnection)
         {
-            if (connectionString == null)
-                throw new ArgumentNullException("connectionString");
-
-            if (connectionString.ToLower().Contains("current schema"))
+            var name = dbConnection.GetType().Namespace;
+            if (name.ToLower().Contains("sqlcli"))
+                return new ScriptSqlServerBuilder();
+            else if (name.ToLower().Contains("hana"))
                 return new ScriptHanaBuilder();
+            else if (name.ToLower().Contains("npgsql"))
+                return new ScriptPostGresBuilder();
+            else if (name.ToLower().Contains("mysql"))
+                return new ScriptMySqlBuilder();
             else
                 return new ScriptSqlServerBuilder();
         }

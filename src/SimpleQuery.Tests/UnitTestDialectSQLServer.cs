@@ -123,7 +123,7 @@ namespace SimpleQuery.Tests
                     builder.Execute(insertScript1, conn);
                     builder.Execute(insertScript2, conn);
 
-                    var clientes = conn.GetAll<Cliente>(cliente);
+                    var clientes = conn.GetAll<Cliente>();
                     Assert.AreEqual(2, clientes.Count());
                     Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
                     Assert.AreEqual("José", clientes.ToList()[1].Nome);

@@ -45,6 +45,9 @@
     <Compile Include="Data\Dialects\DataFormatter.cs" />
     <Compile Include="Data\Dialects\ScriptCommon.cs" />
     <Compile Include="Data\Dialects\ScriptHanaBuilder.cs" />
+    <Compile Include="Data\Dialects\ScriptMySqlBuilder.cs" />
+    <Compile Include="Data\Dialects\ScriptPostGresBuilder.cs" />
+    <Compile Include="Data\Dialects\ScriptSqliteBuilder.cs" />
     <Compile Include="Data\Dialects\ScriptSqlServerBuilder.cs" />
     <Compile Include="Domain\Data\DbType.cs" />
     <Compile Include="Domain\Data\Dialects\IScriptBuilder.cs" />

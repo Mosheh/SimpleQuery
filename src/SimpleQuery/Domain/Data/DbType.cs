@@ -9,8 +9,11 @@ namespace SimpleQuery.Domain.Data
     public enum DbServerType
     {
         SqlServer,
+        Sqlite,
         Hana,
         PostGres,
-        MySql
+        MySql,
+        Oracle,
+        FbAdapter
     }
 }

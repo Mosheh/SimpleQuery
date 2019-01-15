@@ -15,6 +15,10 @@ namespace SimpleQuery.Data.Dialects
             
             return keyProperty;
         }
-       
+
+        public virtual PropertyInfo GetKeyPropertyModel<T>() where T: class, new()
+        {
+            return GetKeyProperty(new T().GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public));
+        }
     }
 }

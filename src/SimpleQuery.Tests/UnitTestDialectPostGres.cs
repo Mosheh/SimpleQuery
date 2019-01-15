@@ -1,22 +1,24 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Npgsql;
 using SimpleQuery.Data.Dialects;
 using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace SimpleQuery.Tests
 {
     [TestClass]
-    public class UnitTestDialectHana
+    public class UnitTestDialectPostGres
     {
         [TestMethod]
-        public void TestHanaDeleteScript()
+        public void TestPostGresDeleteScript()
         {
-            IScriptBuilder builder = new ScriptHanaBuilder();
+            IScriptBuilder builder = new ScriptPostGresBuilder();
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
@@ -27,9 +29,9 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
-        public void TestHanaInsertScript()
+        public void TestPostGresInsertScript()
         {
-            IScriptBuilder builder = new ScriptHanaBuilder();
+            IScriptBuilder builder = new ScriptPostGresBuilder();
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 20, ValorTotalNotasFiscais = 2000.95, Credito = 10, UltimoValorDeCompra = 1000.95m };
 
@@ -40,9 +42,9 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
-        public void TestHanaUpdateScript()
+        public void TestPostGresUpdateScript()
         {
-            IScriptBuilder builder = new ScriptHanaBuilder();
+            IScriptBuilder builder = new ScriptPostGresBuilder();
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = 1035.22m };
 
@@ -52,10 +54,12 @@ namespace SimpleQuery.Tests
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
 
+
+
         [TestMethod]
-        public void TestHanaUpdateScriptComValorNulo()
+        public void TestPostGresUpdateScriptComValorNulo()
         {
-            IScriptBuilder builder = new ScriptHanaBuilder();
+            IScriptBuilder builder = new ScriptPostGresBuilder();
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = null };
 
@@ -66,9 +70,9 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
-        public void TestHanaSelectScript()
+        public void TestPostGresSelectScript()
         {
-            IScriptBuilder builder = new ScriptHanaBuilder();
+            IScriptBuilder builder = new ScriptPostGresBuilder();
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
@@ -79,74 +83,79 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
-        public void TestInsertOperationHana()
+        public void TestInsertOperationPostGres()
         {
-            var hanaConnection = new Sap.Data.Hana.HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
-            hanaConnection.Open();
-            var trans = hanaConnection.BeginTransaction();
-            using (var conn = hanaConnection)
+            var connection = new NpgsqlConnection(ConfigurationManager.ConnectionStrings["PostGres"].ConnectionString);
+            connection.Open();
+
+            var trans = connection.BeginTransaction();
+            using (var conn = connection)
             {
-                IScriptBuilder builder = new ScriptHanaBuilder();
+                IScriptBuilder builder = new ScriptPostGresBuilder();
 
                 var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
                 var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
-                builder.Execute(createTableScript, conn);
+                builder.Execute(createTableScript, conn, trans);
 
-                var lastId = conn.InsertRereturnId<Cliente>(cliente);
+                var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
 
-                trans.Rollback();
-                builder.Execute("drop table \"Cliente\"", hanaConnection);
+                //conn.Execute("drop table \"Cliente\"");
+                //conn.Execute("drop sequence \"sequence_cliente_id\"");
             }
         }
 
         [TestMethod]
-        public void TestSelectOperationHana()
+        public void TestSelectOperationPostGres()
         {
-            var hanaConnection = new Sap.Data.Hana.HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
-            hanaConnection.Open();
-            var trans = hanaConnection.BeginTransaction();
-            using (var conn = hanaConnection)
+            var connection = new NpgsqlConnection(ConfigurationManager.ConnectionStrings["postgres"].ConnectionString);
+            connection.Open();
+
+            using (var scope = new TransactionScope())
             {
-                IScriptBuilder builder = new ScriptHanaBuilder();
+                using (var conn = connection)
+                {
+                    IScriptBuilder builder = new ScriptPostGresBuilder();
 
-                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
-                var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
+                    var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+                    var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
 
-                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
-                var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
-                var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
-                builder.Execute(createTableScript, conn);
-                builder.Execute(insertScript1, conn);
-                builder.Execute(insertScript2, conn);
-                
-                var clientes = conn.GetAll<Cliente>();
-                Assert.AreEqual(2, clientes.Count());
-                Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
-                Assert.AreEqual("José", clientes.ToList()[1].Nome);
+                    var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
 
-                trans.Rollback();
-                builder.Execute("drop table \"Cliente\"", hanaConnection);
+                    var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
+                    var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
+
+                    builder.Execute(createTableScript, conn);
+                    builder.Execute(insertScript1, conn);
+                    builder.Execute(insertScript2, conn);
+
+                    var clientes = conn.GetAll<Cliente>();
+                    Assert.AreEqual(2, clientes.Count());
+                    Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
+                    Assert.AreEqual("José", clientes.ToList()[1].Nome);
+
+                    conn.Execute("drop table \"Cliente\"");                    
+                }
             }
         }
 
         [TestMethod]
-        public void TestCreateTableHana()
+        public void TestCreateTablePostGres()
         {
-            IScriptBuilder builder = new ScriptHanaBuilder();
+            IScriptBuilder builder = new ScriptPostGresBuilder();
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
             var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
-            var resultadoEsperado = "create table \"Cliente\" (\"Id\" INTEGER not null primary key generated by default as IDENTITY, \"Nome\" VARCHAR(255), \"Ativo\" BOOLEAN, \"TotalPedidos\" INTEGER, \"ValorTotalNotasFiscais\" DOUBLE, \"Credito\" DECIMAL(18,6), \"UltimoValorDeCompra\" DECIMAL(18,6))";
+            var resultadoEsperado = 
+                $"create sequence \"sequence_cliente_id\";{Environment.NewLine}create table \"Cliente\" (\"Id\" integer primary key not null default nextval ('sequence_cliente_id'), \"Nome\" character varying(255), \"Ativo\" boolean, \"TotalPedidos\" integer null, \"ValorTotalNotasFiscais\" double precision, \"Credito\" numeric(18,6), \"UltimoValorDeCompra\" numeric(18,6));{Environment.NewLine}alter sequence sequence_cliente_id owned by \"Cliente\".\"Id\";";
 
             Assert.AreEqual(resultadoEsperado, createTableScript);
         }
 
         public class Cliente
         {
-            private string HashId { get; set; }
             public int Id { get; set; }
             public string Nome { get; set; }
             public bool Ativo { get; set; }
