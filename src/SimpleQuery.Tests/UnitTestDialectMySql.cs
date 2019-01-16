@@ -49,7 +49,7 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = 1035.22m };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update `Cliente` set `Nome`='Moisés', set `Ativo`=1, set `TotalPedidos`=55, set `ValorTotalNotasFiscais`=1000.55, set `Credito`=2000.53, set `UltimoValorDeCompra`=1035.22 where `Id`=1";
+            var resultadoEsperado = "update `Cliente` set `Nome`='Moisés', `Ativo`=1, `TotalPedidos`=55, `ValorTotalNotasFiscais`=1000.55, `Credito`=2000.53, `UltimoValorDeCompra`=1035.22 where `Id`=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
@@ -62,7 +62,7 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = null };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update `Cliente` set `Nome`='Moisés', set `Ativo`=1, set `TotalPedidos`=55, set `ValorTotalNotasFiscais`=1000.55, set `Credito`=2000.53, set `UltimoValorDeCompra`=null where `Id`=1";
+            var resultadoEsperado = "update `Cliente` set `Nome`='Moisés', `Ativo`=1, `TotalPedidos`=55, `ValorTotalNotasFiscais`=1000.55, `Credito`=2000.53, `UltimoValorDeCompra`=null where `Id`=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
@@ -99,6 +99,36 @@ namespace SimpleQuery.Tests
                 var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
 
+                trans.Rollback();
+
+                conn.Execute("drop table `Cliente`");
+            }
+        }
+
+
+
+        [TestMethod]
+        public void TestUpdateOperationMySql()
+        {
+            var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["MySql"].ConnectionString);
+            connection.Open();
+
+            var trans = connection.BeginTransaction();
+            using (var conn = connection)
+            {
+                IScriptBuilder builder = new ScriptMySqlBuilder();
+
+                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+
+                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                builder.Execute(createTableScript, conn, trans);
+
+                var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
+                Assert.AreEqual(1, lastId);
+
+                cliente.Id = lastId;
+                cliente.Nome = "João";
+                conn.Update<Cliente>(cliente);
                 trans.Rollback();
 
                 conn.Execute("drop table `Cliente`");
