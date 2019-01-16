@@ -36,7 +36,7 @@ namespace SimpleQuery.Tests
         [TestCleanup]
         public void TestCleanup()
         {          
-            //File.Delete(GetFileNameDb());
+            File.Delete(GetFileNameDb());
         }
 
         [TestMethod]
@@ -124,10 +124,12 @@ namespace SimpleQuery.Tests
                 Assert.AreEqual(1, lastId);
                 trans.Rollback();
                 conn.ReleaseMemory();
-                conn.Close();    
-                
 
-            }            
+                conn.Close();
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
 
         [TestMethod]
@@ -160,7 +162,8 @@ namespace SimpleQuery.Tests
                     conn.Execute("drop table [Cliente]");
                     conn.ReleaseMemory();
                     conn.Close();
-                    
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
                 }
             }
         }
