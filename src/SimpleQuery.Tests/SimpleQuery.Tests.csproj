@@ -97,8 +97,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestData.cs" />
     <Compile Include="UnitTestDialectMySql.cs" />
     <Compile Include="UnitTestDialectSqlite.cs" />
+    <Compile Include="UnitTestExtentionsSqlite.cs" />
     <Compile Include="UnitTestExtentionsHana.cs" />
     <Compile Include="UnitTestExtentionsSQLServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

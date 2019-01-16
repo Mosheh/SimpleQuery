@@ -158,13 +158,13 @@ namespace SimpleQuery.Data.Dialects
             if (keyProperty == null)
                 throw new Exception($"Key column not found for {entityName}");
 
-            var strBuilderSql = new StringBuilder($"update \"{entityName}\" ");
+            var strBuilderSql = new StringBuilder($"update \"{entityName}\" set ");
             foreach (var item in allProperties)
             {
                 if (keyProperty == item)
                     continue;
 
-                strBuilderSql.Append($"set \"{item.Name}\"={DataFormatter.GetValue(item, obj, this.DbServerType)}");
+                strBuilderSql.Append($"\"{item.Name}\"={DataFormatter.GetValue(item, obj, this.DbServerType)}");
 
                 if (item != allProperties.Last())
                     strBuilderSql.Append(", ");

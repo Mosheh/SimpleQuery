@@ -88,10 +88,10 @@ namespace SimpleQuery
 
             command.CommandText = updateCommandText;
             var rowsCount = command.ExecuteNonQuery();
-            Console.WriteLine($"{rowsCount} affected rows");            
+            Console.WriteLine($"{rowsCount} affected rows");
 
             if (wasClosed) dbConnection.Close();
-            
+
         }
 
         public static void Delete<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
@@ -141,7 +141,7 @@ namespace SimpleQuery
             Console.WriteLine($"{rowsCount} affected rows");
 
             return rowsCount;
-        }       
+        }
 
         public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection)
            where T : class, new()
@@ -165,9 +165,9 @@ namespace SimpleQuery
             return list;
         }
 
-        static IEnumerable<T> GetTypedList<T>(IDataReader reader) where T: class, new()
+        static IEnumerable<T> GetTypedList<T>(IDataReader reader) where T : class, new()
         {
-            
+
             var listModel = new List<T>();
 
             var dataTable = new DataTable();
@@ -223,12 +223,45 @@ namespace SimpleQuery
             {
                 if (row.Table.Columns.Cast<DataColumn>().Any(c => c.ColumnName == item.Name))
                 {
-                    item.SetValue(model, row[item.Name] == DBNull.Value ? null : Convert.ChangeType( row[item.Name], item.PropertyType));
+                    var rowValue = row[item.Name];
+                    var value = ChangeType(rowValue, item.PropertyType);
+
+                    item.SetValue(model, row[item.Name] == DBNull.Value ? null : value);
                 }
             }
 
             return model;
         }
+
+        public static object ChangeType(object value, Type conversion)
+        {
+            var t = conversion;
+
+            if (t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+            {
+                if (value == null)
+                {
+                    return null;
+                }
+
+                t = Nullable.GetUnderlyingType(t);
+            }
+            if (value is DBNull)
+            {
+                if (conversion.AssemblyQualifiedName.Contains("System.DateTime") ||
+                    conversion.AssemblyQualifiedName.Contains("System.Int32") ||
+                    conversion.AssemblyQualifiedName.Contains("System.Int64") ||
+                    conversion.AssemblyQualifiedName.Contains("System.Decimal") ||
+                    conversion.AssemblyQualifiedName.Contains("System.Double") ||
+                    conversion.AssemblyQualifiedName.Contains("System.Boolean")||
+                    conversion.AssemblyQualifiedName.Contains("System.String"))
+                    return null;
+                else
+                    throw new Exception("Type value is not mapped");
+            }
+            return Convert.ChangeType(value, t);
+        }
+
 
         public static IScriptBuilder GetScriptBuild(this IDbConnection dbConnection)
         {

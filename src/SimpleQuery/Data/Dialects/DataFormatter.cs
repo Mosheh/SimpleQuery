@@ -26,20 +26,24 @@ namespace SimpleQuery.Data.Dialects
         }
         public static object GetValue<T>(PropertyInfo item, T obj, DbServerType dbServerType) where T : class, new()
         {
+            var value = item.GetValue(obj);
             switch (item.PropertyType.Name)
             {
                 case "String":
-                    return $"'{item.GetValue(obj)}'";
+                    if (value is null)
+                        return "null";
+                    else
+                        return $"'{item.GetValue(obj)}'";
                 case "Boolean":
-                    if (dbServerType == DbServerType.Hana || dbServerType== DbServerType.PostGres)
+                    if (dbServerType == DbServerType.Hana || dbServerType == DbServerType.PostGres)
                         return ((bool)item.GetValue(obj)) == true ? "true" : "false";
                     else
                         return ((bool)item.GetValue(obj)) == true ? "1" : "0";
-                case "DateTime":                    
+                case "DateTime":
                     return $"'{((DateTime)item.GetValue(obj)).ToString("yyyy-MM-dd")}'";
-                   
-                case "Nullable`1":                    
-                    return GetNullableValue(item, obj);
+
+                case "Nullable`1":
+                    return GetNullableValue(item, obj, dbServerType);
                 case "Double":
                     var nfiDouble = new NumberFormatInfo();
                     nfiDouble.NumberDecimalSeparator = ".";
@@ -55,7 +59,7 @@ namespace SimpleQuery.Data.Dialects
 
         }
 
-        private static object GetNullableValue<T>(PropertyInfo item, T obj) where T : class, new()
+        private static object GetNullableValue<T>(PropertyInfo item, T obj, DbServerType dbServerType) where T : class, new()
         {
             var nfiDecimal = new NumberFormatInfo();
             nfiDecimal.NumberDecimalSeparator = ".";
@@ -65,6 +69,10 @@ namespace SimpleQuery.Data.Dialects
                 return value;
             else if (value == null)
                 return "null";
+            else if (value is true && (dbServerType == DbServerType.SqlServer || dbServerType == DbServerType.Sqlite))
+                return "1";
+            else if (value is false && (dbServerType == DbServerType.SqlServer || dbServerType == DbServerType.Sqlite))
+                return "0";
             else if (value is true)
                 return "true";
             else if (value is false)
@@ -74,7 +82,8 @@ namespace SimpleQuery.Data.Dialects
                 return Convert.ToDecimal(item.GetValue(obj)).ToString(nfiDecimal);
             else if (value is double)
                 return Convert.ToDouble(item.GetValue(obj)).ToString(nfiDecimal);
-
+            else if (value is DateTime)
+                return $"'{ Convert.ToDateTime(value).ToString("yyyy-MM-dd")}'";
             return ((bool)item.GetValue(obj)) == true ? 1 : 0;
         }
     }
