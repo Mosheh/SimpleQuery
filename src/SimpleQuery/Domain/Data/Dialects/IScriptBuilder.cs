@@ -22,24 +22,88 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <summary>
         /// Return update command
         /// </summary>
-        /// <typeparam name="T">Model (entity)</typeparam>
+        /// <typeparam name="T">Class type</typeparam>
         /// <param name="obj">Instace model</param>
         /// <returns>sql update command</returns>
         string GetUpdateCommand<T>(T obj) where T : class, new();
-
+        /// <summary>
+        /// Return select command from instance model
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="obj">Instance model</param>
+        /// <returns></returns>
         string GetSelectCommand<T>(T obj) where T : class, new();
-
+        /// <summary>
+        /// Return delete command from instance model
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="obj">Instance model</param>
+        /// <param name="key">key value in database</param>
+        /// <returns></returns>
         string GetDeleteCommand<T>(T obj, object key) where T : class, new();
 
+        /// <summary>
+        /// Return create table command
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="obj">Instance model</param>
+        /// <returns></returns>
         string GetCreateTableCommand<T>(T obj) where T : class, new();
 
+        /// <summary>
+        /// Return the generated key
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="model">Instance model</param>
+        /// <param name="dbConnection">Connection</param>
+        /// <param name="transaction">Transaction</param>
+        /// <returns></returns>
         object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null);
+
+        /// <summary>
+        /// Return the generated key
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="model">Instance model</param>
+        /// <param name="dbConnection">Connection</param>
+        /// <param name="transaction">Transaction</param>
+        /// <param name="sequenceName">Name of the string used in some databases</param>
+        /// <returns></returns>
         object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null, string sequenceName=null);
 
+        /// <summary>
+        /// Return the property representing the primary key in table. Based on the criteria: If the name of the property is named "Id" or "DocEntry"
+        /// </summary>
+        /// <param name="allProperties"></param>
+        /// <returns></returns>
         PropertyInfo GetKeyProperty(PropertyInfo[] allProperties);
+
+        /// <summary>
+        /// Return the property representing the primary key in table. Based on the criteria: If the name of the property is named "Id" or "DocEntry"
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <returns></returns>
         PropertyInfo GetKeyPropertyModel<T>() where T : class, new();
+
+        /// <summary>
+        /// Execute sql command in database
+        /// </summary>
+        /// <param name="commandText">Sql command</param>
+        /// <param name="dbConnection">Connection</param>
+        /// <param name="transaction">Transaction</param>
+        /// <returns>Select result</returns>
         IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction transaction=null);
+
+        /// <summary>
+        /// Execute sql command in database
+        /// </summary>
+        /// <param name="commandText">Sql command</param>
+        /// <param name="dbConnection">Connection</param>
+        /// <param name="transaction">Transaction</param>
         void Execute(string commandText, IDbConnection dbConnection, IDbTransaction transaction = null);
+        /// <summary>
+        /// Database server type
+        /// </summary>
         DbServerType DbServerType { get; }
     }
 }

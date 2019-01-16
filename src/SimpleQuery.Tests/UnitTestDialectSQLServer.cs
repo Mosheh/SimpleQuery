@@ -81,7 +81,7 @@ namespace SimpleQuery.Tests
         {
             var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
             connection.Open();
-            
+
             var trans = connection.BeginTransaction();
             using (var conn = connection)
             {
@@ -127,9 +127,54 @@ namespace SimpleQuery.Tests
                     Assert.AreEqual("José", clientes.ToList()[1].Nome);
 
                     conn.Execute("drop table [Cliente]");
-                }                
+                }
             }
         }
+        public string connstring => ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString;
+
+
+
+
+
+
+
+        public void SaveCustomer()
+        {
+            var connection = new SqlConnection(connstring);
+            var customer = new Customer { Name = "John" };
+
+            connection.Insert(customer);
+
+            customer.Name = "John Lennon";
+
+            connection.Update(customer);
+
+            var customers = connection.GetAll<Customer>();
+        }
+
+
+        public class Customer
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         [TestMethod]
         public void TestCreateTableSqlServer()
