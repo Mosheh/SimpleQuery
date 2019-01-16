@@ -223,7 +223,7 @@ namespace SimpleQuery
             {
                 if (row.Table.Columns.Cast<DataColumn>().Any(c => c.ColumnName == item.Name))
                 {
-                    item.SetValue(model, row[item.Name] == DBNull.Value ? null : row[item.Name]);
+                    item.SetValue(model, row[item.Name] == DBNull.Value ? null : Convert.ChangeType( row[item.Name], item.PropertyType));
                 }
             }
 
@@ -241,6 +241,8 @@ namespace SimpleQuery
                 return new ScriptPostGresBuilder();
             else if (name.ToLower().Contains("mysqlclient"))
                 return new ScriptMySqlBuilder();
+            else if (name.ToLower().Contains("system.data.sqlite"))
+                return new ScriptSqliteBuilder();
             else
                 return new ScriptSqlServerBuilder();
         }

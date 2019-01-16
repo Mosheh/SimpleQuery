@@ -35,7 +35,10 @@ namespace SimpleQuery.Data.Dialects
                         return ((bool)item.GetValue(obj)) == true ? "true" : "false";
                     else
                         return ((bool)item.GetValue(obj)) == true ? "1" : "0";
-                case "Nullable`1":
+                case "DateTime":                    
+                    return $"'{((DateTime)item.GetValue(obj)).ToString("yyyy-MM-dd")}'";
+                   
+                case "Nullable`1":                    
                     return GetNullableValue(item, obj);
                 case "Double":
                     var nfiDouble = new NumberFormatInfo();

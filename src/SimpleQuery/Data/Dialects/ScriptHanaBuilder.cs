@@ -219,6 +219,8 @@ namespace SimpleQuery.Data.Dialects
                     return "DECIMAL(18,6)";
                 case "Double":
                     return "DOUBLE";
+                case "DateTime":
+                    return "Date";
                 case "Nullable`1":
                     if (item.PropertyType.AssemblyQualifiedName.Contains("System.Int32"))
                         return "INTEGER";
@@ -226,6 +228,8 @@ namespace SimpleQuery.Data.Dialects
                         return "BOOLEAN";
                     else if (item.PropertyType.AssemblyQualifiedName.Contains("System.Decimal"))
                         return "DECIMAL(18,6)";
+                    else if (item.PropertyType.AssemblyQualifiedName.Contains("System.DateTime"))
+                        return "Date";
                     else
                         return "INTEGER NOT NULL";
                 default:

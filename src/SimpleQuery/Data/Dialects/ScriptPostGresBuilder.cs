@@ -225,6 +225,8 @@ namespace SimpleQuery.Data.Dialects
                     return "boolean";
                 case "Decimal":
                     return "numeric(18,6)";
+                case "DateTime":
+                    return "Date";
                 case "Double":
                     return "double precision";
                 case "Nullable`1":
@@ -236,6 +238,8 @@ namespace SimpleQuery.Data.Dialects
                         return "numeric(18,6)";
                     else if (item.PropertyType.AssemblyQualifiedName.Contains("System.Double"))
                         return "decimal(18,6)";
+                    else if (item.PropertyType.AssemblyQualifiedName.Contains("System.DateTime"))
+                        return "Date";
                     else
                         return "double precision";
                 default:
