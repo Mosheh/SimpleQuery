@@ -233,13 +233,13 @@ namespace SimpleQuery
         public static IScriptBuilder GetScriptBuild(this IDbConnection dbConnection)
         {
             var name = dbConnection.GetType().Namespace;
-            if (name.ToLower().Contains("sqlcli"))
+            if (name.ToLower().Contains("System.Data.SqlClient"))
                 return new ScriptSqlServerBuilder();
             else if (name.ToLower().Contains("hana"))
                 return new ScriptHanaBuilder();
             else if (name.ToLower().Contains("npgsql"))
                 return new ScriptPostGresBuilder();
-            else if (name.ToLower().Contains("mysql"))
+            else if (name.ToLower().Contains("mysqlclient"))
                 return new ScriptMySqlBuilder();
             else
                 return new ScriptSqlServerBuilder();
