@@ -45,12 +45,10 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = 1035.22m };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', set [Ativo]=1, set [TotalPedidos]=55, set [ValorTotalNotasFiscais]=1000.55, set [Credito]=2000.53, set [UltimoValorDeCompra]=1035.22 where Id=1";
+            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', [Ativo]=1, [TotalPedidos]=55, [ValorTotalNotasFiscais]=1000.55, [Credito]=2000.53, [UltimoValorDeCompra]=1035.22 where Id=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
-
-
 
         [TestMethod]
         public void TestSqlServerUpdateScriptComValorNulo()
@@ -60,7 +58,7 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = null };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', set [Ativo]=1, set [TotalPedidos]=55, set [ValorTotalNotasFiscais]=1000.55, set [Credito]=2000.53, set [UltimoValorDeCompra]=null where Id=1";
+            var resultadoEsperado = "update [Cliente] set [Nome]='Moisés', [Ativo]=1, [TotalPedidos]=55, [ValorTotalNotasFiscais]=1000.55, [Credito]=2000.53, [UltimoValorDeCompra]=null where Id=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
