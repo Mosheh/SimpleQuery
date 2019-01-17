@@ -235,8 +235,8 @@ namespace SimpleQuery.Data.Dialects
              where T: class, new()
         {
 
-            var queryTrans = new MyQueryTranslator();
-           var where = $" where { queryTrans.Translate(expression)}";
+            var queryTrans = new ExpressionQueryTranslator();
+           var where = $" where { queryTrans.Translate(expression, this.DbServerType)}";
 
             return where;
         }

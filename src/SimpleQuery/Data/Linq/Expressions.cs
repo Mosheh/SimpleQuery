@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleQuery.Domain.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -7,13 +8,28 @@ using System.Threading.Tasks;
 
 namespace SimpleQuery.Data.Linq
 {
-    public class MyQueryTranslator : ExpressionVisitor
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ExpressionQueryTranslator : ExpressionVisitor
     {
+        private DbServerType _dbServer;
         private StringBuilder sb;
         private string _orderBy = string.Empty;
         private int? _skip = null;
         private int? _take = null;
         private string _whereClause = string.Empty;
+        public Dictionary<DbServerType, Tuple<string, string>> CharacterDialect { get; set; } =
+            new Dictionary<DbServerType, Tuple<string, string>>
+            {
+                { DbServerType.Hana, new Tuple<string, string>("\"", "\"") },
+                { DbServerType.FbAdapter, new Tuple<string, string>("\"", "\"") },
+                { DbServerType.Oracle, new Tuple<string, string>("\"", "\"") },
+                { DbServerType.PostGres, new Tuple<string, string>("\"", "\"") },
+                { DbServerType.Sqlite, new Tuple<string, string>("[", "]") },
+                { DbServerType.SqlServer, new Tuple<string, string>("[", "]") },
+                { DbServerType.MySql, new Tuple<string, string>("`", "`") }
+            };
 
         public int? Skip
         {
@@ -47,12 +63,13 @@ namespace SimpleQuery.Data.Linq
             }
         }
 
-        public MyQueryTranslator()
+        public ExpressionQueryTranslator()
         {
         }
 
-        public string Translate(Expression expression)
+        public string Translate(Expression expression, DbServerType dbServerType)
         {
+            _dbServer = dbServerType;
             this.sb = new StringBuilder();
             this.Visit(expression);
             _whereClause = this.sb.ToString();
@@ -251,7 +268,7 @@ namespace SimpleQuery.Data.Linq
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
-                sb.Append(m.Member.Name);
+                sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");
                 return m;
             }
 
