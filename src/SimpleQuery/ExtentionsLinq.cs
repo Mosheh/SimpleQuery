@@ -24,7 +24,7 @@ namespace SimpleQuery
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
             var selectScript = scripBuilder.GetSelectCommand<T>(instanceModel);
-            var whereScript = scripBuilder.GetWhereCommand<T>(whereExpression, instanceModel);
+            var whereScript = scripBuilder.GetWhereCommand<T>(whereExpression);
             var selectAndWhere = $"{selectScript}  {whereScript}";
             var reader = scripBuilder.ExecuteReader(selectAndWhere, dbConnection);
             var listModel = new List<T>();

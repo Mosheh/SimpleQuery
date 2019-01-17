@@ -1,4 +1,5 @@
-﻿using SimpleQuery.Domain.Data;
+﻿using SimpleQuery.Data.Linq;
+using SimpleQuery.Domain.Data;
 using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
@@ -255,9 +256,9 @@ namespace SimpleQuery.Data.Dialects
 
         }
 
-        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) where T: class, new()
+        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T: class, new()
         {
-            throw new NotImplementedException();
+            return ExpressionQueryTranslator.GetWhereCommand<T>(expression, this.DbServerType);            
         }
     }
 }

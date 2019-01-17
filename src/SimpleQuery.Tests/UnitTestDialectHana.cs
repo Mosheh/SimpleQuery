@@ -47,12 +47,23 @@ namespace SimpleQuery.Tests
             var contract = TestData.GetContract();
 
             var sqlInsertCommand = builder.GetInsertCommand(contract);
-            var resultadoEsperado = "insert into \"Contract\" (\"Status\", \"ContractDate\", \"Proposal\", \"BusinessPartner\", \"BusinessPartnerName\", \"TypeContract\", \"Undertaking\", \"UndertakingName\", \"UndertakingBlock\", \"UndertakingUnit\", \"UndertakingUnitName\", \"Property\", \"PropertyRate\", \"Classification\", \"ClassificationDate\", \"RenegotiationRate\", \"AnticipationRate\", \"AnticipationRateTP\", \"TypeFineResidue\", \"FineRateResidue\", \"DeliveryDate\", \"SignatureDate\", \"CostCenter\", \"ContractOrigin\", \"ProRataLow\", \"ProRataDiscount\", \"ProRataLowDelay\", \"ProRataResidue\", \"ProRataAnticipation\", \"DirectComission\", \"TotalComission\", \"GenerateCreeditLetterOnOverPayment\", \"StatusDate\", \"Comments\", \"TypeCalcMora\", \"DocTotal\", \"SaleValue\", \"AssignmentRights\", \"AdjustmentOnlyCalculateDueDate\", \"NotGenerateNegativeMonetaryCorrection\", \"LagOfInterestDay\", \"LagOfFine\", \"AccPeriodId\", \"MonthsOfGrowthForCorrectionYearly\", \"AccountNumber\", \"Accounted\", \"InstructionBoE\", \"BlockPaymentWithFutureDate\", \"CostUnit\", \"EnableDiscountPunctuality\", \"NumberInstallmentsPunctuality\", \"RealEstateTransferDays\", \"AdministrationRate\", \"RentalTransferGuaranteed\") values (5, '2019-01-16', 5, 'C001', 'MOISÉS J. MIRANDA', 1, 2, 'Gran Ville', '15', 21, 'GRAN House', 5, 1.2, 5, null, 2, 1.5, 1.6, null, 2, '2019-01-16', '2019-01-16', '1.1', null, true, false, null, null, true, 5000, 1000, false, '2019-01-16', 'comments', 1, 25382000.99, 30000000.00, false, true, true, 0, 0, 1, 1, 123, true, 'payment credit card', true, 830, true, 12, 10, 2, false)";
+            var resultadoEsperado = $"insert into \"Contract\" (\"Status\", \"ContractDate\", \"Proposal\", \"BusinessPartner\", \"BusinessPartnerName\", \"TypeContract\", \"Undertaking\", \"UndertakingName\", \"UndertakingBlock\", \"UndertakingUnit\", \"UndertakingUnitName\", \"Property\", \"PropertyRate\", \"Classification\", \"ClassificationDate\", \"RenegotiationRate\", \"AnticipationRate\", \"AnticipationRateTP\", \"TypeFineResidue\", \"FineRateResidue\", \"DeliveryDate\", \"SignatureDate\", \"CostCenter\", \"ContractOrigin\", \"ProRataLow\", \"ProRataDiscount\", \"ProRataLowDelay\", \"ProRataResidue\", \"ProRataAnticipation\", \"DirectComission\", \"TotalComission\", \"GenerateCreeditLetterOnOverPayment\", \"StatusDate\", \"Comments\", \"TypeCalcMora\", \"DocTotal\", \"SaleValue\", \"AssignmentRights\", \"AdjustmentOnlyCalculateDueDate\", \"NotGenerateNegativeMonetaryCorrection\", \"LagOfInterestDay\", \"LagOfFine\", \"AccPeriodId\", \"MonthsOfGrowthForCorrectionYearly\", \"AccountNumber\", \"Accounted\", \"InstructionBoE\", \"BlockPaymentWithFutureDate\", \"CostUnit\", \"EnableDiscountPunctuality\", \"NumberInstallmentsPunctuality\", \"RealEstateTransferDays\", \"AdministrationRate\", \"RentalTransferGuaranteed\") values (5, '{DateTime.Now.ToString("yyyy-MM-dd")}', 5, 'C001', 'MOISÉS J. MIRANDA', 1, 2, 'Gran Ville', '15', 21, 'GRAN House', 5, 1.2, 5, null, 2, 1.5, 1.6, null, 2, '2019-01-16', '{DateTime.Now.ToString("yyyy-MM-dd")}', '1.1', null, true, false, null, null, true, 5000, 1000, false, '{DateTime.Now.ToString("yyyy-MM-dd")}', 'comments', 1, 25382000.99, 30000000.00, false, true, true, 0, 0, 1, 1, 123, true, 'payment credit card', true, 830, true, 12, 10, 2, false)";
 
             Assert.AreEqual(resultadoEsperado, sqlInsertCommand);
         }
 
-       
+        [TestMethod]
+        public void TestHanaWhere()
+        {
+            IScriptBuilder builder = new ScriptHanaBuilder();
+
+            var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = 1035.22m };
+
+            var whereScript =  builder.GetWhereCommand<Cliente>(c=>c.Id == 1);
+            var resultadoEsperado = "where (\"Id\" = 1)";
+
+            Assert.AreEqual(resultadoEsperado, whereScript);
+        }
 
         [TestMethod]
         public void TestHanaUpdateScript()

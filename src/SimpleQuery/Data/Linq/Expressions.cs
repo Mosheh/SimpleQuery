@@ -331,5 +331,13 @@ namespace SimpleQuery.Data.Linq
 
             return false;
         }
+
+        internal static string GetWhereCommand<T>(Expression<Func<T, bool>> expression, DbServerType dbServerType) where T : class, new()
+        {
+            var queryTrans = new ExpressionQueryTranslator();
+            var where = $"where { queryTrans.Translate(expression, dbServerType)}";
+
+            return where;
+        }
     }
 }

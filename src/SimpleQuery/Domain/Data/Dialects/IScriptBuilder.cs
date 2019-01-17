@@ -95,7 +95,7 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <returns>Select result</returns>
         IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction transaction=null);
 
-        string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) where T: class, new();
+        string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T: class, new();
 
         /// <summary>
         /// Execute sql command in database

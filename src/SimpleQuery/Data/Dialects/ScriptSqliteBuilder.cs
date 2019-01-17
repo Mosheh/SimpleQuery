@@ -231,14 +231,10 @@ namespace SimpleQuery.Data.Dialects
             return sql;
         }
 
-        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) 
-             where T: class, new()
+        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression)
+             where T : class, new()
         {
-
-            var queryTrans = new ExpressionQueryTranslator();
-           var where = $" where { queryTrans.Translate(expression, this.DbServerType)}";
-
-            return where;
+            return ExpressionQueryTranslator.GetWhereCommand<T>(expression, this.DbServerType);
         }
     }
 }

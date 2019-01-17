@@ -237,9 +237,9 @@ namespace SimpleQuery.Data.Dialects
             return sql;
         }
 
-        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) where T: class, new()
+        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T: class, new()
         {
-            throw new NotImplementedException();
+            return Linq.ExpressionQueryTranslator.GetWhereCommand<T>(expression, this.DbServerType);
         }
     }
 }
