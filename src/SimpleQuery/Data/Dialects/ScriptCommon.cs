@@ -1,5 +1,4 @@
-﻿using SimpleQuery.Anottations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -12,27 +11,27 @@ namespace SimpleQuery.Data.Dialects
     {
         public virtual PropertyInfo GetKeyProperty(PropertyInfo[] allProperties)
         {
-            var keyProperty = allProperties.ToList().Find(c => c.Name.ToUpper() == "ID" || c.Name.ToUpper() == "DocEntry");
+            var keyProperty = allProperties.ToList().Find(c => c.Name.ToUpper() == "ID" || c.Name.ToUpper() == "DocEntry" ||
+            c.GetCustomAttributes().Any(p=>p is System.ComponentModel.DataAnnotations.KeyAttribute));
 
             return keyProperty;
         }
 
         public virtual PropertyInfo GetKeyProperty(IEnumerable<PropertyInfo> allProperties)
         {
-            var keyProperty = allProperties.ToList().Find(c => c.Name.ToUpper() == "ID" || c.Name.ToUpper() == "DocEntry");
+            var keyProperty = GetKeyProperty(allProperties.ToArray<PropertyInfo>());
 
             return keyProperty;
         }
 
         public virtual PropertyInfo GetKeyPropertyModel<T>() where T : class, new()
         {
-            return GetKeyProperty(new T().GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public));
+            return GetKeyProperty(new T().GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList());
         }
 
         internal static bool IsIgnoreProperty(PropertyInfo propertyInfo)
         {
-            return propertyInfo.GetCustomAttributes().Where(c => c is Ignore).Any();
-
+            return propertyInfo.GetCustomAttributes().Where(c => c is System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute).Any();
         }
 
         internal static IEnumerable<PropertyInfo> GetValidProperty<T>() where T:class, new()

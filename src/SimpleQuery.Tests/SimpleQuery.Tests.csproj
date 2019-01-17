@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestData.cs" />
+    <Compile Include="UnitTestCommon.cs" />
     <Compile Include="UnitTestDialectMySql.cs" />
     <Compile Include="UnitTestDialectSqlite.cs" />
     <Compile Include="UnitTestExtentionsSqlite.cs" />

@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
@@ -44,7 +45,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Anottations\Ignore.cs" />
     <Compile Include="Data\Dialects\DataFormatter.cs" />
     <Compile Include="Data\Dialects\ScriptCommon.cs" />
     <Compile Include="Data\Dialects\ScriptHanaBuilder.cs" />

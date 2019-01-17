@@ -143,6 +143,12 @@ namespace SimpleQuery
             return rowsCount;
         }
 
+        /// <summary>
+        /// Get all
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dbConnection"></param>
+        /// <returns></returns>
         public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection)
            where T : class, new()
         {
