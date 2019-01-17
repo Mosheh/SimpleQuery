@@ -12,7 +12,7 @@ namespace SimpleQuery.Data.Dialects
     {
         public virtual PropertyInfo GetKeyProperty(PropertyInfo[] allProperties)
         {
-            var keyProperty = allProperties.ToList().Find(c => c.CustomAttributes.Any(x => x.AttributeType.FullName.EndsWith("Attribute.Identity")));
+            var keyProperty = allProperties.ToList().Find(c => c.CustomAttributes.Any(x => x.AttributeType.FullName.EndsWith("System.ComponentModel.DataAnnotations.Key")));
             return keyProperty;
         }
 
