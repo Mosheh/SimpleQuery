@@ -1,6 +1,11 @@
 # SimpleQuery
 ORM Very Easy to use. All CRUD operations. Look:
 
+Nuget
+
+PM: Install-Package SimpleQuery-ORM -Version 1.0.1.3
+
+Paket CLI: paket add SimpleQuery-ORM --version 1.0.1.3
 
 Execute insert, update, delete, select returing strongly typed List
 ------------------------------------------------------------
