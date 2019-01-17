@@ -189,6 +189,14 @@ namespace SimpleQuery.Tests
             public double ValorTotalNotasFiscais { get; set; }
             public decimal Credito { get; set; }
             public decimal? UltimoValorDeCompra { get; set; }
+            public EnderecoCliente Endereco { get; set; }
+            List<string> Obs { get; set; }
+        }
+
+        public class EnderecoCliente
+        {
+            public int ClienteId { get; set; }
+            public string Description { get; set; }
         }
     }
 }

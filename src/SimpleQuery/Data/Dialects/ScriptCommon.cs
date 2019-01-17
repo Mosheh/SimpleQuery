@@ -17,6 +17,13 @@ namespace SimpleQuery.Data.Dialects
             return keyProperty;
         }
 
+        public virtual PropertyInfo GetKeyProperty(IEnumerable<PropertyInfo> allProperties)
+        {
+            var keyProperty = allProperties.ToList().Find(c => c.Name.ToUpper() == "ID" || c.Name.ToUpper() == "DocEntry");
+
+            return keyProperty;
+        }
+
         public virtual PropertyInfo GetKeyPropertyModel<T>() where T : class, new()
         {
             return GetKeyProperty(new T().GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public));
@@ -42,18 +49,26 @@ namespace SimpleQuery.Data.Dialects
             return new[] {
             typeof(string),
             typeof(char),
+            typeof(bool),
+            typeof(bool?),
             typeof(byte),
             typeof(sbyte),
             typeof(ushort),
             typeof(short),
+            typeof(short?),
             typeof(uint),
             typeof(int),
+            typeof(int?),
             typeof(ulong),
             typeof(long),
             typeof(float),
+            typeof(float?),
             typeof(double),
+            typeof(double?),
             typeof(decimal),
+            typeof(decimal?),
             typeof(DateTime),
+            typeof(DateTime?)
         }.Contains(t);
         }
     }

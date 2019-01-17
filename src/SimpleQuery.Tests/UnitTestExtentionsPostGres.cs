@@ -119,5 +119,12 @@ namespace SimpleQuery.Tests
     {
         public int Id { get; set; }
         public string Nome { get; set; }
+        public Endereco Endereco { get; set; }
+    }
+
+    public class Endereco
+    {
+        public int ClienteId { get; set; }
+        public string AddressDescription { get; set; }
     }
 }

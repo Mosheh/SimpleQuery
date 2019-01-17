@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleQuery.Data.Dialects;
 using SimpleQuery.Domain.Data.Dialects;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
@@ -198,6 +199,14 @@ namespace SimpleQuery.Tests
             public double ValorTotalNotasFiscais { get; set; }
             public decimal Credito { get; set; }
             public decimal? UltimoValorDeCompra { get; set; }
+
+            public List<string> Obs { get; set; }
+            public ClienteEndereco Endereco { get; set; }
+        }
+
+        public class ClienteEndereco
+        {
+
         }
     }
 }
