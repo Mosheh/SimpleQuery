@@ -66,7 +66,7 @@ namespace SimpleQuery.Data.Dialects
 
         public string GetInsertCommand<T>(T obj, bool includeKey = false) where T : class, new()
         {
-            var allProperties = ScriptCommon.GetValidProperty<T>();
+            var allProperties = GetValidProperty<T>();
             var entityName = obj.GetType().Name;
 
             var keyName = GetKeyProperty(allProperties.ToArray<PropertyInfo>());

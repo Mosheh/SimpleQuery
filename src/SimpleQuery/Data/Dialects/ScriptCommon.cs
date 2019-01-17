@@ -12,8 +12,7 @@ namespace SimpleQuery.Data.Dialects
     {
         public virtual PropertyInfo GetKeyProperty(PropertyInfo[] allProperties)
         {
-            var keyProperty = allProperties.ToList().Find(c => c.Name.ToUpper() == "ID" || c.Name.ToUpper() == "DocEntry");
-
+            var keyProperty = allProperties.ToList().Find(c => c.CustomAttributes.Any(x => x.AttributeType.FullName.EndsWith("Attribute.Identity")));
             return keyProperty;
         }
 
