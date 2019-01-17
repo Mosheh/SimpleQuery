@@ -19,7 +19,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Nome = "Miranda" };
 
-            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
 
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
@@ -41,7 +41,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Nome = "Miranda" };
 
-            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
             Assert.AreEqual(1, id);
@@ -56,7 +56,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Nome = "Miranda" };
 
-            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
             conn.Execute(createTableScript);
             conn.Insert<Cliente>(cliente);
             Assert.AreEqual(1, cliente.Id);
@@ -72,7 +72,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Nome = "Miranda" };
 
-            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
 
@@ -91,7 +91,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Nome = "Miranda" };
 
-            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
 
@@ -110,7 +110,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Nome = "Miranda" };
 
-            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
 
@@ -129,7 +129,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Nome = "Miranda" };
 
-            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
             cliente.Id = id;

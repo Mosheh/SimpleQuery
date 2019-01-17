@@ -46,10 +46,11 @@ namespace SimpleQuery.Data.Dialects
             return reader;
         }
 
-        public string GetCreateTableCommand<T>(T obj) where T : class, new()
+        public string GetCreateTableCommand<T>() where T : class, new()
         {
+            var model = new T();
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = obj.GetType().Name;
+            var entityName = model.GetType().Name;
 
             var keyProperty = GetKeyProperty(allProperties);
 

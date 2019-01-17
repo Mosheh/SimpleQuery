@@ -95,7 +95,7 @@ namespace SimpleQuery.Tests
 
                 var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn, trans);
 
                 var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
@@ -119,7 +119,7 @@ namespace SimpleQuery.Tests
 
                 var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn, trans);
 
                 var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
@@ -147,7 +147,7 @@ namespace SimpleQuery.Tests
                     var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
                     var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
 
-                    var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                    var createTableScript = builder.GetCreateTableCommand<Cliente>();
 
                     var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
                     var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
@@ -173,7 +173,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-            var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = builder.GetCreateTableCommand<Cliente>();
             var resultadoEsperado = 
                 $"create sequence \"sequence_cliente_id\";{Environment.NewLine}create table \"Cliente\" (\"Id\" integer primary key not null default nextval ('sequence_cliente_id'), \"Nome\" character varying(255), \"Ativo\" boolean, \"TotalPedidos\" integer null, \"ValorTotalNotasFiscais\" double precision, \"Credito\" numeric(18,6), \"UltimoValorDeCompra\" numeric(18,6));{Environment.NewLine}alter sequence sequence_cliente_id owned by \"Cliente\".\"Id\";";
 

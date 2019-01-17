@@ -117,7 +117,7 @@ namespace SimpleQuery.Tests
 
                 var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn, trans);
 
                 var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
@@ -147,7 +147,7 @@ namespace SimpleQuery.Tests
                     var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, DataCadastro=DateTime.Now };
                     var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
 
-                    var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                    var createTableScript = builder.GetCreateTableCommand<Cliente>();
                     var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
                     var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
                     builder.Execute(createTableScript, conn);
@@ -175,7 +175,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-            var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = builder.GetCreateTableCommand<Cliente>();
             var resultadoEsperado = "create table [Cliente] ([Id] integer not null primary key autoincrement, [DataCadastro] datetime, [Nome] text, [Ativo] boolean, [TotalPedidos] integer null, [ValorTotalNotasFiscais] double, [Credito] decimal(18,6), [UltimoValorDeCompra] decimal(18,6) null)";
 
             Assert.AreEqual(resultadoEsperado, createTableScript);
@@ -192,11 +192,15 @@ namespace SimpleQuery.Tests
             public decimal Credito { get; set; }
             public decimal? UltimoValorDeCompra { get; set; }
             public ClienteEndereco Endereco { get; set; }
+            public List<int> MyProperty { get; set; }
         }
 
         public class ClienteEndereco
         {
-
+            public ClienteEndereco()
+            {
+                
+            }
         }
     }
 }

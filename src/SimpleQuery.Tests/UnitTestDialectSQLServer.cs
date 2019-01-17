@@ -90,7 +90,7 @@ namespace SimpleQuery.Tests
 
                 var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-                var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn, trans);
 
                 var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
@@ -115,7 +115,7 @@ namespace SimpleQuery.Tests
                     var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
                     var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
 
-                    var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+                    var createTableScript = builder.GetCreateTableCommand<Cliente>();
                     var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
                     var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
                     builder.Execute(createTableScript, conn);
@@ -184,7 +184,7 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-            var createTableScript = builder.GetCreateTableCommand<Cliente>(cliente);
+            var createTableScript = builder.GetCreateTableCommand<Cliente>();
             var resultadoEsperado = "create table [Cliente] ([Id] int not null identity, [Nome] nvarchar(255), [Ativo] bit, [TotalPedidos] int, [ValorTotalNotasFiscais] float, [Credito] decimal(18,6), [UltimoValorDeCompra] decimal(18,6), primary key ([Id]))";
 
             Assert.AreEqual(resultadoEsperado, createTableScript);

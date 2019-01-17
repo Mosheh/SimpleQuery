@@ -167,10 +167,10 @@ namespace SimpleQuery.Data.Dialects
             return sql;
         }
 
-        public string GetCreateTableCommand<T>(T obj) where T : class, new()
+        public string GetCreateTableCommand<T>() where T : class, new()
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = obj.GetType().Name;
+            var entityName = new T().GetType().Name;
 
             var keyProperty = GetKeyProperty(allProperties);
 

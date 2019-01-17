@@ -49,7 +49,7 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <typeparam name="T">Class type</typeparam>
         /// <param name="obj">Instance model</param>
         /// <returns></returns>
-        string GetCreateTableCommand<T>(T obj) where T : class, new();
+        string GetCreateTableCommand<T>() where T : class, new();
 
         /// <summary>
         /// Return the generated key
