@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -236,6 +237,11 @@ namespace SimpleQuery.Data.Dialects
         public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null, string sequenceName = null)
         {
             return GetLastId<T>(model, dbConnection, transaction);
+        }
+
+        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) where T: class, new()
+        {
+            throw new NotImplementedException();
         }
     }
 }

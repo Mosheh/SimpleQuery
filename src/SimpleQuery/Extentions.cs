@@ -12,7 +12,7 @@ using System.Transactions;
 
 namespace SimpleQuery
 {
-    public static class Extentions
+    public static partial class Extentions
     {
         private static readonly ConcurrentDictionary<RuntimeTypeHandle, string> GetQueries = new ConcurrentDictionary<RuntimeTypeHandle, string>();
 

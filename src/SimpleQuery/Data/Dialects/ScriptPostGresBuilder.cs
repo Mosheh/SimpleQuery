@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -262,6 +263,11 @@ namespace SimpleQuery.Data.Dialects
                 else
                     throw new Exception($"Could not get geranted Id in PostGres sequence for table {model.GetType().Name}");
             }
+        }
+
+        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) where T: class, new()
+        {
+            throw new NotImplementedException();
         }
     }
 }

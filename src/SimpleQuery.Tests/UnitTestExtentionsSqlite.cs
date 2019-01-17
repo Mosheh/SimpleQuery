@@ -147,6 +147,30 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void SqliteSelectWithWhereCondition()
+        {
+            var conn = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Cliente>(cliente);
+
+            var clientes = conn.Select<Cliente>(c=> c.Id==1);
+
+            Assert.AreEqual(1, clientes.Count());
+            Assert.AreEqual("Miranda", clientes.ToList()[0].Nome);
+            conn.Execute("drop table [Cliente]");
+
+            conn.ReleaseMemory();
+            conn.Close();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        [TestMethod]
         public void SqliteSelectContractModel()
         {
             var conn = new SQLiteConnection($"Data Source={GetFileNameDb()}");

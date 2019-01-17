@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -234,6 +235,11 @@ namespace SimpleQuery.Data.Dialects
 
             var sql = strBuilderSql.ToString();
             return sql;
+        }
+
+        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) where T: class, new()
+        {
+            throw new NotImplementedException();
         }
     }
 }

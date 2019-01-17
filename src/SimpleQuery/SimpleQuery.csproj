@@ -51,9 +51,11 @@
     <Compile Include="Data\Dialects\ScriptPostGresBuilder.cs" />
     <Compile Include="Data\Dialects\ScriptSqliteBuilder.cs" />
     <Compile Include="Data\Dialects\ScriptSqlServerBuilder.cs" />
+    <Compile Include="Data\Linq\Expressions.cs" />
     <Compile Include="Domain\Data\DbType.cs" />
     <Compile Include="Domain\Data\Dialects\IScriptBuilder.cs" />
     <Compile Include="Extentions.cs" />
+    <Compile Include="ExtentionsLinq.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

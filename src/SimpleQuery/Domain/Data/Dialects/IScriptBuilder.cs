@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Transactions;
@@ -93,6 +94,8 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <param name="transaction">Transaction</param>
         /// <returns>Select result</returns>
         IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction transaction=null);
+
+        string GetWhereCommand<T>(Expression<Func<T, bool>> expression, T instance) where T: class, new();
 
         /// <summary>
         /// Execute sql command in database
