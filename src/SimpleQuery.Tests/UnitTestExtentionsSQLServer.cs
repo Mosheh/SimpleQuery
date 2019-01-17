@@ -84,6 +84,44 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void SQLServerSelectWithWhere()
+        {
+            var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLServer"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Cliente>(cliente);
+
+            var clientes = conn.Select<Cliente>(c=>c.Id==1);
+
+            Assert.AreEqual(1, clientes.Count());
+            Assert.AreEqual("Miranda", clientes.ToList()[0].Nome);
+            conn.Execute("drop table [Cliente]");
+        }
+
+        [TestMethod]
+        public void SQLServerSelectWithWhereStringField()
+        {
+            var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLServer"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>(cliente);
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Cliente>(cliente);
+
+            var clientes = conn.Select<Cliente>(c => c.Nome == "Miranda");
+
+            Assert.AreEqual(1, clientes.Count());
+            Assert.AreEqual("Miranda", clientes.ToList()[0].Nome);
+            conn.Execute("drop table [Cliente]");
+        }
+
+        [TestMethod]
         public void SQLServerDeleteModel()
         {
             var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLServer"].ConnectionString);

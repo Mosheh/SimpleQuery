@@ -150,6 +150,25 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void SapHanaSelectContractWhereName()
+        {
+            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var contract = TestData.GetContract();
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Contract>(contract);
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Contract>(contract);
+
+            var contracts = conn.Select<Contract>(c=>c.BusinessPartnerName == "MOISÉS J. MIRANDA");
+
+            Assert.AreEqual(1, contracts.Count());
+            Assert.AreEqual("MOISÉS J. MIRANDA", contracts.ToList()[0].BusinessPartnerName);
+            conn.Execute("drop table \"Contract\"");
+        }
+
+        [TestMethod]
         public void SapHanaDeleteModel()
         {
             var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
