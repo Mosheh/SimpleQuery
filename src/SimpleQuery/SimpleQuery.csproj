@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Anottations\Ignore.cs" />
     <Compile Include="Data\Dialects\DataFormatter.cs" />
     <Compile Include="Data\Dialects\ScriptCommon.cs" />
     <Compile Include="Data\Dialects\ScriptHanaBuilder.cs" />

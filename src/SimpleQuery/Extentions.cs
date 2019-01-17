@@ -266,7 +266,7 @@ namespace SimpleQuery
         public static IScriptBuilder GetScriptBuild(this IDbConnection dbConnection)
         {
             var name = dbConnection.GetType().Namespace;
-            if (name.ToLower().Contains("System.Data.SqlClient"))
+            if (name.ToLower().Contains("system.data.sqlclient"))
                 return new ScriptSqlServerBuilder();
             else if (name.ToLower().Contains("hana"))
                 return new ScriptHanaBuilder();
