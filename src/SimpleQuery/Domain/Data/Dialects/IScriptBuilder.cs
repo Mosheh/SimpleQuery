@@ -27,6 +27,7 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <param name="obj">Instace model</param>
         /// <returns>sql update command</returns>
         string GetUpdateCommand<T>(T obj) where T : class, new();
+       
         /// <summary>
         /// Return select command from instance model
         /// </summary>
@@ -34,6 +35,15 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <param name="obj">Instance model</param>
         /// <returns></returns>
         string GetSelectCommand<T>(T obj) where T : class, new();
+
+        /// <summary>
+        /// Return select command from instance model
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="obj">Instance model</param>
+        /// <returns></returns>
+        string GetSelectCommand<T>(T obj, Expression<Func<T, bool>> expression) where T : class, new();
+
         /// <summary>
         /// Return delete command from instance model
         /// </summary>
@@ -95,6 +105,12 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <returns>Select result</returns>
         IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction transaction=null);
 
+        /// <summary>
+        /// Return where command
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="expression">Expression to translate</param>
+        /// <returns></returns>
         string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T: class, new();
 
         /// <summary>

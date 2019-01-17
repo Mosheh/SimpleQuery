@@ -105,6 +105,19 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void TestHanaSelectWithWhereScript()
+        {
+            IScriptBuilder builder = new ScriptHanaBuilder();
+
+            var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+
+            var selectWithWhereCommand = builder.GetSelectCommand<Cliente>(cliente, c=>c.Id == 1);
+            var resultadoEsperado = "select \"Id\", \"Nome\", \"Ativo\", \"TotalPedidos\", \"ValorTotalNotasFiscais\", \"Credito\", \"UltimoValorDeCompra\" from \"Cliente\" where (\"Id\" = 1)";
+
+            Assert.AreEqual(resultadoEsperado, selectWithWhereCommand);
+        }
+
+        [TestMethod]
         public void TestInsertOperationHana()
         {
             var hanaConnection = new Sap.Data.Hana.HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
@@ -158,7 +171,7 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
-        public void TestCreateTableScriptHana()
+        public void TestHanaCreateTableScript()
         {
             IScriptBuilder builder = new ScriptHanaBuilder();
 
@@ -171,7 +184,7 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
-        public void TestCreateContractTableScriptHana()
+        public void TestHanaCreateContractTableScript()
         {
             IScriptBuilder builder = new ScriptHanaBuilder();
 

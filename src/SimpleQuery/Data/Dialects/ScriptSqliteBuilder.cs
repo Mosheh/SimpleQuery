@@ -236,5 +236,12 @@ namespace SimpleQuery.Data.Dialects
         {
             return ExpressionQueryTranslator.GetWhereCommand<T>(expression, this.DbServerType);
         }
+
+        public string GetSelectCommand<T>(T obj, Expression<Func<T, bool>> expression) where T : class, new()
+        {
+            var select = GetSelectCommand<T>(obj);
+            var where = GetWhereCommand<T>(expression);
+            return select + " " + where;
+        }
     }
 }

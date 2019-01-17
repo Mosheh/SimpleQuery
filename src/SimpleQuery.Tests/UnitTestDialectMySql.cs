@@ -81,6 +81,19 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void TestMySqlSelectWithWhereScript()
+        {
+            IScriptBuilder builder = new ScriptMySqlBuilder();
+
+            var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+
+            var sqlUpdate = builder.GetSelectCommand<Cliente>(cliente, c=>c.Id == 1);
+            var resultadoEsperado = "select `Id`, `Nome`, `Ativo`, `TotalPedidos`, `ValorTotalNotasFiscais`, `Credito`, `UltimoValorDeCompra` from `Cliente` where (`Id` = 1)";
+
+            Assert.AreEqual(resultadoEsperado, sqlUpdate);
+        }
+
+        [TestMethod]
         public void TestInsertOperationMySql()
         {
             var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["MySql"].ConnectionString);
@@ -168,7 +181,7 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
-        public void TestCreateTableMySql()
+        public void TestMySqlCreateTable()
         {
             IScriptBuilder builder = new ScriptMySqlBuilder();
 
