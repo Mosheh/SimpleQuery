@@ -266,7 +266,8 @@ namespace SimpleQuery.Data.Linq
 
         protected override Expression VisitMember(MemberExpression m)
         {
-            if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
+            if (m.Expression != null && (m.Expression.NodeType == ExpressionType.Parameter ||
+                m.Expression.NodeType == ExpressionType.MemberAccess))
             {
                 sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");
                 return m;

@@ -85,7 +85,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void TestInsertOperationPostGres()
         {
-            var connection = new NpgsqlConnection(ConfigurationManager.ConnectionStrings["PostGres"].ConnectionString);
+            var connection = new NpgsqlConnection();
+            
             connection.Open();
 
             var trans = connection.BeginTransaction();
