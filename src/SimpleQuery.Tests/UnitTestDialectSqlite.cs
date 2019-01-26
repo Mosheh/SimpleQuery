@@ -169,6 +169,38 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void TestSelectWithWhereMailOperationSqlite()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            connection.Open();
+
+            using (var scope = new TransactionScope())
+            {
+                using (var conn = connection)
+                {
+                    IScriptBuilder builder = new ScriptSqliteBuilder();
+
+                    User user = new User() { Id = 1, Name = "Moisés" , Email = "moises@gmail.com"};                    
+
+                    var createTableScript = builder.GetCreateTableCommand<User>();                    
+                    builder.Execute(createTableScript, conn);
+                    conn.Insert(user);
+
+                    var users = conn.Select<User>(c => c.Email == user.Email);
+                    Assert.AreEqual(1, users.Count());
+                    Assert.AreEqual("Moisés", users.ToList()[0].Name);
+                    Assert.AreEqual(1, users.ToList()[0].Id);
+
+                    conn.Execute("drop table [User]");
+                    conn.ReleaseMemory();
+                    conn.Close();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+            }
+        }
+
+        [TestMethod]
         public void TestCreateTableSqlite()
         {
             IScriptBuilder builder = new ScriptSqliteBuilder();
@@ -200,6 +232,28 @@ namespace SimpleQuery.Tests
             public ClienteEndereco()
             {
                 
+            }
+        }
+
+        public class User
+        {
+            public int Id { get; set; }
+            public string LoginName { get; set; }
+            public string Password { get; set; }
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string Phone { get; set; }
+            /// <summary>
+            /// If true indicate the can't be removed
+            /// </summary>
+            public bool System { get; set; }
+
+            public void SetPassword(string password, string confirmPassword)
+            {
+                
+                if (password != confirmPassword)
+                    throw new Exception("Invalid password or passwords not matched");
+
             }
         }
     }
