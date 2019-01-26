@@ -180,12 +180,13 @@ namespace SimpleQuery.Tests
                 {
                     IScriptBuilder builder = new ScriptSqliteBuilder();
 
-                    User user = new User() { Id = 1, Name = "Moisés" , Email = "moises@gmail.com"};                    
+                    User user = new User() { Id = 1, Name = "Moisés" , Email = "moises@gmail.com"};
+                    User user2 = new User() { Id = 1, Name = "Miranda", Email = "miranda@gmail.com" };
 
                     var createTableScript = builder.GetCreateTableCommand<User>();                    
                     builder.Execute(createTableScript, conn);
                     conn.Insert(user);
-
+                    conn.Insert(user2);
                     var users = conn.Select<User>(c => c.Email == user.Email);
                     Assert.AreEqual(1, users.Count());
                     Assert.AreEqual("Moisés", users.ToList()[0].Name);

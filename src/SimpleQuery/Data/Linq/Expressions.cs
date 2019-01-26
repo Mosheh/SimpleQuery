@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -264,16 +265,52 @@ namespace SimpleQuery.Data.Linq
             return c;
         }
 
+
+        public object Evaluate(Expression e)
+        {
+            switch (e.NodeType)
+            {
+                case ExpressionType.Constant:
+                    return (e as ConstantExpression).Value;
+                case ExpressionType.MemberAccess:
+                    {
+                        var propertyExpression = e as MemberExpression;
+                        var field = propertyExpression.Member as FieldInfo;
+                        var property = propertyExpression.Member as PropertyInfo;
+                        var container = propertyExpression.Expression == null ? null : Evaluate(propertyExpression.Expression);
+                        if (field != null)
+                            return field.GetValue(container);
+                        else if (property != null)
+                            return property.GetValue(container, null);
+                        else
+                            return null;
+                    }
+                default:
+                    return null;
+            }
+        }
         protected override Expression VisitMember(MemberExpression m)
         {
-            if (m.Expression != null && (m.Expression.NodeType == ExpressionType.Parameter ||
-                m.Expression.NodeType == ExpressionType.MemberAccess))
+            if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
                 sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");
                 return m;
             }
+            else if (m.Expression.NodeType == ExpressionType.MemberAccess)
+            {
+                var prop = m.Member as System.Reflection.PropertyInfo;
+                var value = Evaluate(m);
+                if (prop.PropertyType.Name == "Int32")
+                    sb.Append(value);
+                else if (prop.PropertyType.Name == "String")
+                    sb.Append($"'{value}'");
+                else
+                    sb.Append(value);
 
-            throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));
+                return m;
+            }
+            else
+                throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));
         }
 
         protected bool IsNullConstant(Expression exp)
