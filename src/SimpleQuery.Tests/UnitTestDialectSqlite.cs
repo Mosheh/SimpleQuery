@@ -133,6 +133,38 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void TestDeleteOperation()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            connection.Open();
+
+            var trans = connection.BeginTransaction();
+            using (var conn = connection)
+            {
+                IScriptBuilder builder = new ScriptSqliteBuilder();
+
+                var cliente = new Cliente() { Nome = "Moisés", Ativo = true };
+
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
+                builder.Execute(createTableScript, conn, trans);
+
+                var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
+                Assert.AreEqual(1, lastId);
+
+                var clienteByDatabase = conn.Select<Cliente>(c => c.Id == lastId).First();
+
+                conn.Delete<Cliente>(clienteByDatabase);
+                trans.Rollback();
+                conn.ReleaseMemory();
+
+                conn.Close();
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        [TestMethod]
         public void TestSelectOperationSqlite()
         {
             var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
