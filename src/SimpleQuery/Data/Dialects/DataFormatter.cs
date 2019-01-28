@@ -24,6 +24,7 @@ namespace SimpleQuery.Data.Dialects
                 return hash;
             }
         }
+
         public static object GetValue<T>(PropertyInfo item, T obj, DbServerType dbServerType) where T : class, new()
         {
             var value = item.GetValue(obj);

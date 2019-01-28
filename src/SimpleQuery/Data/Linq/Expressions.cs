@@ -239,7 +239,10 @@ namespace SimpleQuery.Data.Linq
                 switch (Type.GetTypeCode(c.Value.GetType()))
                 {
                     case TypeCode.Boolean:
-                        sb.Append(((bool)c.Value) ? 1 : 0);
+                        if (this._dbServer == DbServerType.Hana || _dbServer == DbServerType.PostGres)
+                            sb.Append(((bool)c.Value) ? "true" : "false");
+                        else
+                            sb.Append(((bool)c.Value) ? 1 : 0);
                         break;
 
                     case TypeCode.String:
@@ -295,9 +298,9 @@ namespace SimpleQuery.Data.Linq
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
                 var prop = m.Member as System.Reflection.PropertyInfo;
-                if (prop != null && prop.PropertyType.Name == "Boolean" && m.Expression.ToString().Length==1)
+                if (prop != null && prop.PropertyType.Name == "Boolean" && m.Expression.ToString().Length == 1)
                 {
-                    sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");                    
+                    sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");
                 }
                 else
                 {

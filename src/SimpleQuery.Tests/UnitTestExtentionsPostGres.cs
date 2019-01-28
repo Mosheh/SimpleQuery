@@ -1,4 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Npgsql;
+using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -8,6 +10,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace SimpleQuery.Tests
 {
@@ -37,14 +40,14 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Nome = "Miranda" };
 
             var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
-            
+
             conn.Execute(createTableScript);
             var id = conn.InsertRereturnId<Cliente>(cliente);
 
             cliente.Id = id;
             cliente.Nome = "Moisés Miranda";
             conn.Update<Cliente>(cliente);
-            
+
             conn.Execute("drop table \"Cliente\"");
         }
 
@@ -61,6 +64,49 @@ namespace SimpleQuery.Tests
             var id = conn.InsertRereturnId<Cliente>(cliente);
             Assert.AreEqual(1, id);
             conn.Execute("drop table \"Cliente\"");
+        }
+
+        [TestCategory("CRUD")]
+        [TestMethod]
+        public void PostGresSelectWithWherePrimitiveTypes()
+        {
+            var connection = new NpgsqlConnection(ConfigurationManager.ConnectionStrings["postgres"].ConnectionString);
+            connection.Open();
+
+
+            using (var conn = connection)
+            {
+                IScriptBuilder builder = conn.GetScriptBuild();
+
+                User user = new User() { Name = "Moisés", Email = "moises@gmail.com", Ratting = 10, Scores = 20 };
+                User user2 = new User() { Name = "Miranda", Email = "miranda@gmail.com", Ratting = 20, Scores = 50 };
+                User user3 = new User() { Name = "Moshe", Email = "moshe@gmail.com", Ratting = 20, Scores = 21, System = true };
+
+                var createTableScript = builder.GetCreateTableCommand<User>();
+                builder.Execute(createTableScript, conn);
+                conn.Insert(user);
+                conn.Insert(user2);
+                conn.Insert(user3);
+
+                var userFirst = conn.Select<User>(c => c.Email == user.Email);
+                var userSecond = conn.Select<User>(c => c.Id == 2);
+                var userThird = conn.Select<User>(c => c.System == true);
+                var noSystem = conn.Select<User>(c => c.System == false);
+                var userRatting20 = conn.Select<User>(c => c.Ratting == 20);
+                var usersScore21 = conn.Select<User>(c => c.Scores == 21);
+
+                Assert.AreEqual(1, userFirst.Count());
+                Assert.AreEqual("Miranda", userSecond.ToList()[0].Name);
+                Assert.AreEqual("Moshe", userThird.ToList()[0].Name);
+                Assert.AreEqual(2, noSystem.Count());
+                Assert.AreEqual(2, userRatting20.Count());
+                Assert.AreEqual("Moshe", usersScore21.ToList()[0].Name);
+
+                conn.Execute("drop table \"User\"");
+
+                conn.Close();
+
+            }
         }
 
         [TestMethod]

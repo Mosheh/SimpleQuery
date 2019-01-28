@@ -50,7 +50,7 @@ namespace SimpleQuery.Data.Dialects
         public string GetCreateTableCommand<T>() where T : class, new()
         {
             var model = new T();
-            var allProperties = model.GetType().GetProperties();
+            var allProperties = GetValidProperty<T>();
             var entityName = model.GetType().Name;
 
             var keyProperty = GetKeyProperty(allProperties);
@@ -168,7 +168,7 @@ namespace SimpleQuery.Data.Dialects
 
         public string GetSelectCommand<T>(T obj) where T : class, new()
         {
-            var allProperties = obj.GetType().GetProperties();
+            var allProperties = GetValidProperty<T>();
             var entityName = obj.GetType().Name;
 
             var strBuilderSql = new StringBuilder($"select ");
