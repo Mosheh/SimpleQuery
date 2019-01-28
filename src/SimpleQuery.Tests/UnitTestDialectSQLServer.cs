@@ -78,6 +78,32 @@ namespace SimpleQuery.Tests
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
 
+        [TestMethod]
+        public void TestExecuteQuerySqlServer()
+        {
+            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            connection.Open();
+
+            using (var scope = new TransactionScope())
+            {
+                using (var conn = connection)
+                {
+                    User user = new User() { Name = "Moisés", Email = "moises@gmail.com", Ratting = 10, Scores = 20 };
+                    User user2 = new User() { Name = "Moisés", Email = "moises@gmail.com", Ratting = 10, Scores = 20 };
+                    var builder = conn.GetScriptBuild();
+
+                    conn.Execute(builder.GetCreateTableCommand<User>());
+
+                    conn.Insert<User>(user);
+                    conn.Insert<User>(user2);
+
+                    var users = conn.Query<User>("select * from [User]");
+
+                    Assert.AreEqual(2, users.Count());
+                }
+            }
+        }
+
         [TestCategory("CRUD")]
         [TestMethod]
         public void TestSelectWithWherePrimitiveTypesSqlServer()
