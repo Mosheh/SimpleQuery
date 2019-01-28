@@ -145,6 +145,34 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void PostGresTestOperators()
+        {
+            var conn = new Npgsql.NpgsqlConnection(ConfigurationManager.ConnectionStrings["postgres"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente1 = new Cliente() { Nome = "Miranda" };
+            var cliente2 = new Cliente() { Nome = "Moshe" };
+            var cliente3 = new Cliente() { Nome = "Moshe" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Cliente>(cliente1);
+            conn.Insert(cliente2);
+            conn.Insert(cliente3);
+
+            var clientesWithIdGreaterThan1 = conn.Select<Cliente>(c=>c.Id>1);
+            var clientesIdOtherThan3 = conn.Select<Cliente>(c => c.Id != 3);
+            var clientesWithIdLessThan2 = conn.Select<Cliente>(c => c.Id < 2);
+
+            Assert.AreEqual(2, clientesWithIdGreaterThan1.Count());
+            Assert.AreEqual("Miranda", clientesIdOtherThan3.ToList()[0].Nome);
+            Assert.AreEqual(2, clientesIdOtherThan3.ToList()[1].Id);
+            Assert.AreEqual(1, clientesWithIdLessThan2.Count());
+
+            conn.Execute("drop table \"Cliente\"");
+        }
+
+        [TestMethod]
         public void PostGresDeleteModel()
         {
             var conn = new Npgsql.NpgsqlConnection(ConfigurationManager.ConnectionStrings["postgres"].ConnectionString);
