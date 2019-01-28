@@ -309,6 +309,19 @@ namespace SimpleQuery.Data.Linq
 
                 return m;
             }
+            else if(m.Expression.NodeType == ExpressionType.Constant)
+            {
+                var prop = m.Member as System.Reflection.FieldInfo;
+                var value = Evaluate(m);
+                if (prop.FieldType.Name == "Int32")
+                    sb.Append(value);
+                else if (prop.FieldType.Name == "String")
+                    sb.Append($"'{value}'");
+                else
+                    sb.Append(value);
+
+                return m;
+            }
             else
                 throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));
         }
