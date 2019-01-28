@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleQuery.Data.Dialects;
 using SimpleQuery.Domain.Data.Dialects;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -77,6 +78,51 @@ namespace SimpleQuery.Tests
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
 
+        [TestCategory("CRUD")]
+        [TestMethod]
+        public void TestSelectWithWherePrimitiveTypesSqlServer()
+        {
+            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            connection.Open();
+
+            using (var scope = new TransactionScope())
+            {
+                using (var conn = connection)
+                {
+                    IScriptBuilder builder = new ScriptSqlServerBuilder();
+
+                    User user = new User() { Name = "Moisés", Email = "moises@gmail.com", Ratting = 10, Scores = 20 };
+                    User user2 = new User() { Name = "Miranda", Email = "miranda@gmail.com", Ratting = 20, Scores = 50 };
+                    User user3 = new User() { Name = "Moshe", Email = "moshe@gmail.com", Ratting = 20, Scores = 21, System = true };
+
+                    var createTableScript = builder.GetCreateTableCommand<User>();
+                    builder.Execute(createTableScript, conn);
+                    conn.Insert(user);
+                    conn.Insert(user2);
+                    conn.Insert(user3);
+
+                    var userFirst = conn.Select<User>(c => c.Email == user.Email);
+                    var userSecond = conn.Select<User>(c => c.Id == 2);
+                    var userThird = conn.Select<User>(c => c.System == true);
+                    var noSystem = conn.Select<User>(c => c.System == false);
+                    var userRatting20 = conn.Select<User>(c => c.Ratting == 20);
+                    var usersScore21 = conn.Select<User>(c => c.Scores == 21);
+
+                    Assert.AreEqual(1, userFirst.Count());
+                    Assert.AreEqual("Miranda", userSecond.ToList()[0].Name);
+                    Assert.AreEqual("Moshe", userThird.ToList()[0].Name);
+                    Assert.AreEqual(2, noSystem.Count());
+                    Assert.AreEqual(2, userRatting20.Count());
+                    Assert.AreEqual("Moshe", usersScore21.ToList()[0].Name);
+
+                    conn.Execute("drop table [User]");
+
+                    conn.Close();
+
+                }
+            }
+        }
+
         [TestMethod]
         public void TestInsertOperationSqlServer()
         {
@@ -134,11 +180,6 @@ namespace SimpleQuery.Tests
         public string connstring => ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString;
 
 
-
-
-
-
-
         public void SaveCustomer()
         {
             var connection = new SqlConnection(connstring);
@@ -159,23 +200,6 @@ namespace SimpleQuery.Tests
             public int Id { get; set; }
             public string Name { get; set; }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         [TestMethod]
         public void TestCreateTableSqlServer()
@@ -206,6 +230,31 @@ namespace SimpleQuery.Tests
 
         public class ClienteEndereco
         {
+
+        }
+    }
+
+    public class User
+    {
+        public int Id { get; set; }
+        public string LoginName { get; set; }
+        public string Password { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        /// <summary>
+        /// If true indicate the can't be removed
+        /// </summary>
+        public bool System { get; set; }
+
+        public decimal Scores { get; set; } = 1m;
+        public double Ratting { get; set; } = 1;
+
+        public void SetPassword(string password, string confirmPassword)
+        {
+
+            if (password != confirmPassword)
+                throw new Exception("Invalid password or passwords not matched");
 
         }
     }

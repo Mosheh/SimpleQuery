@@ -131,6 +131,7 @@ namespace SimpleQuery.Data.Linq
             throw new NotSupportedException(string.Format("The method '{0}' is not supported", m.Method.Name));
         }
 
+
         protected override Expression VisitUnary(UnaryExpression u)
         {
             switch (u.NodeType)
@@ -293,7 +294,15 @@ namespace SimpleQuery.Data.Linq
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
-                sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");
+                var prop = m.Member as System.Reflection.PropertyInfo;
+                if (prop != null && prop.PropertyType.Name == "Boolean" && m.Expression.ToString().Length==1)
+                {
+                    sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");                    
+                }
+                else
+                {
+                    sb.Append($"{CharacterDialect[this._dbServer].Item1}{m.Member.Name}{CharacterDialect[_dbServer].Item2}");
+                }
                 return m;
             }
             else if (m.Expression.NodeType == ExpressionType.MemberAccess)
@@ -309,7 +318,7 @@ namespace SimpleQuery.Data.Linq
 
                 return m;
             }
-            else if(m.Expression.NodeType == ExpressionType.Constant)
+            else if (m.Expression.NodeType == ExpressionType.Constant)
             {
                 var prop = m.Member as System.Reflection.FieldInfo;
                 var value = Evaluate(m);

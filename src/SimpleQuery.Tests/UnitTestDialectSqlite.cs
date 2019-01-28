@@ -35,7 +35,7 @@ namespace SimpleQuery.Tests
 
         [TestCleanup]
         public void TestCleanup()
-        {          
+        {
             File.Delete(GetFileNameDb());
         }
 
@@ -57,7 +57,7 @@ namespace SimpleQuery.Tests
         {
             IScriptBuilder builder = new ScriptSqliteBuilder();
 
-            var cliente = new Cliente() { Id = 1, DataCadastro=DateTime.Now, Nome = "Moisés", Ativo = true, TotalPedidos = 20, ValorTotalNotasFiscais = 2000.95, Credito = 10, UltimoValorDeCompra = 1000.95m };
+            var cliente = new Cliente() { Id = 1, DataCadastro = DateTime.Now, Nome = "Moisés", Ativo = true, TotalPedidos = 20, ValorTotalNotasFiscais = 2000.95, Credito = 10, UltimoValorDeCompra = 1000.95m };
 
             var insertScript = builder.GetInsertCommand<Cliente>(cliente);
             var resultadoEsperado = $"insert into [Cliente] ([DataCadastro], [Nome], [Ativo], [TotalPedidos], [ValorTotalNotasFiscais], [Credito], [UltimoValorDeCompra]) values ('{cliente.DataCadastro.ToString("yyyy-MM-dd")}', 'Moisés', 1, 20, 2000.95, 10, 1000.95)";
@@ -103,7 +103,7 @@ namespace SimpleQuery.Tests
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
-
+        [TestCategory("CRUD")]
         [TestMethod]
         public void TestInsertOperationSqlite()
         {
@@ -131,7 +131,7 @@ namespace SimpleQuery.Tests
                 GC.WaitForPendingFinalizers();
             }
         }
-
+        [TestCategory("CRUD")]
         [TestMethod]
         public void TestDeleteOperation()
         {
@@ -163,7 +163,7 @@ namespace SimpleQuery.Tests
                 GC.WaitForPendingFinalizers();
             }
         }
-
+        [TestCategory("CRUD")]
         [TestMethod]
         public void TestSelectOperationSqlite()
         {
@@ -176,7 +176,7 @@ namespace SimpleQuery.Tests
                 {
                     IScriptBuilder builder = new ScriptSqliteBuilder();
 
-                    var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, DataCadastro=DateTime.Now };
+                    var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, DataCadastro = DateTime.Now };
                     var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
 
                     var createTableScript = builder.GetCreateTableCommand<Cliente>();
@@ -199,7 +199,7 @@ namespace SimpleQuery.Tests
                 }
             }
         }
-
+        [TestCategory("CRUD")]
         [TestMethod]
         public void TestSelectWithWhereMailOperationSqlite()
         {
@@ -212,10 +212,10 @@ namespace SimpleQuery.Tests
                 {
                     IScriptBuilder builder = new ScriptSqliteBuilder();
 
-                    User user = new User() { Id = 1, Name = "Moisés" , Email = "moises@gmail.com"};
+                    User user = new User() { Id = 1, Name = "Moisés", Email = "moises@gmail.com" };
                     User user2 = new User() { Id = 1, Name = "Miranda", Email = "miranda@gmail.com" };
 
-                    var createTableScript = builder.GetCreateTableCommand<User>();                    
+                    var createTableScript = builder.GetCreateTableCommand<User>();
                     builder.Execute(createTableScript, conn);
                     conn.Insert(user);
                     conn.Insert(user2);
@@ -223,6 +223,52 @@ namespace SimpleQuery.Tests
                     Assert.AreEqual(1, users.Count());
                     Assert.AreEqual("Moisés", users.ToList()[0].Name);
                     Assert.AreEqual(1, users.ToList()[0].Id);
+
+                    conn.Execute("drop table [User]");
+                    conn.ReleaseMemory();
+                    conn.Close();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+            }
+        }
+
+        [TestCategory("CRUD")]
+        [TestMethod]
+        public void TestSelectWithWherePrimitiveTypesSqlite()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            connection.Open();
+
+            using (var scope = new TransactionScope())
+            {
+                using (var conn = connection)
+                {
+                    IScriptBuilder builder = new ScriptSqliteBuilder();
+
+                    User user = new User() { Name = "Moisés", Email = "moises@gmail.com", Ratting=10, Scores = 20 };
+                    User user2 = new User() { Name = "Miranda", Email = "miranda@gmail.com", Ratting=20, Scores = 50 };
+                    User user3 = new User() { Name = "Moshe", Email = "moshe@gmail.com", Ratting=20, Scores = 21, System = true };
+
+                    var createTableScript = builder.GetCreateTableCommand<User>();
+                    builder.Execute(createTableScript, conn);
+                    conn.Insert(user);
+                    conn.Insert(user2);
+                    conn.Insert(user3);
+
+                    var userFirst = conn.Select<User>(c => c.Email == user.Email);
+                    var userSecond = conn.Select<User>(c => c.Id == 2);
+                    var userThird = conn.Select<User>(c => c.System);
+                    var noSystem = conn.Select<User>(c => c.System==false);
+                    var userRatting20 = conn.Select<User>(c => c.Ratting == 20);
+                    var usersScore21 = conn.Select<User>(c => c.Scores == 21);
+
+                    Assert.AreEqual(1, userFirst.Count());
+                    Assert.AreEqual("Miranda", userSecond.ToList()[0].Name);
+                    Assert.AreEqual("Moshe", userThird.ToList()[0].Name);
+                    Assert.AreEqual(2, noSystem.Count());
+                    Assert.AreEqual(2, userRatting20.Count());
+                    Assert.AreEqual("Moshe", usersScore21.ToList()[0].Name);
 
                     conn.Execute("drop table [User]");
                     conn.ReleaseMemory();
@@ -264,7 +310,7 @@ namespace SimpleQuery.Tests
         {
             public ClienteEndereco()
             {
-                
+
             }
         }
 
@@ -281,9 +327,12 @@ namespace SimpleQuery.Tests
             /// </summary>
             public bool System { get; set; }
 
+            public decimal Scores { get; set; } = 1m;
+            public double Ratting { get; set; } = 1;
+
             public void SetPassword(string password, string confirmPassword)
             {
-                
+
                 if (password != confirmPassword)
                     throw new Exception("Invalid password or passwords not matched");
 
