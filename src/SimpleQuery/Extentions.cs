@@ -291,7 +291,8 @@ namespace SimpleQuery
                     conversion.AssemblyQualifiedName.Contains("System.Decimal") ||
                     conversion.AssemblyQualifiedName.Contains("System.Double") ||
                     conversion.AssemblyQualifiedName.Contains("System.Boolean")||
-                    conversion.AssemblyQualifiedName.Contains("System.String"))
+                    conversion.AssemblyQualifiedName.Contains("System.String")||
+                    conversion.AssemblyQualifiedName.Contains("System.Byte[]"))
                     return null;
                 else
                     throw new Exception("Type value is not mapped");

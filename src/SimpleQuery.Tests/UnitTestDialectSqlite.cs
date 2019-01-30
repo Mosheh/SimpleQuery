@@ -320,6 +320,62 @@ namespace SimpleQuery.Tests
             }
         }
 
+        [TestMethod]
+        public void TestInsertAndSelectFileSqlite()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+
+            connection.Open();
+
+            using (var conn = connection)
+            {
+                var builder = conn.GetScriptBuild();
+                var archive = new ArchiveModel() { Content = Properties.Resources.conduites_1 };
+
+                var createTableScript = builder.GetCreateTableCommand<ArchiveModel>();
+                conn.Execute(createTableScript);
+
+                conn.Insert<ArchiveModel>(archive);
+
+                var files = conn.GetAll<ArchiveModel>();
+
+                conn.Execute("drop table [ArchiveModel]");
+
+                conn.ReleaseMemory();
+                conn.Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        [TestMethod]
+        public void TestInsertModelWithEnum()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+
+            connection.Open();
+
+            using (var conn = connection)
+            {
+                var builder = conn.GetScriptBuild();
+                var model = new ModelWithEnum() {  Email = "", ExportFormat = ExportFormat.SqlToExcel };
+
+                var createTableScript = builder.GetCreateTableCommand<ModelWithEnum>();
+                conn.Execute(createTableScript);
+
+                conn.Insert<ModelWithEnum>(model);
+
+                var files = conn.GetAll<ModelWithEnum>();
+
+                conn.Execute("drop table [ModelWithEnum]");
+
+                conn.ReleaseMemory();
+                conn.Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
         public class Cliente
         {
             public int Id { get; set; }
@@ -342,6 +398,29 @@ namespace SimpleQuery.Tests
             }
         }
 
+        public class ModelWithEnum
+        {
+            public int Id { get; set; }
+            public byte[] Query { get; set; }
+       
+            public string Email { get; set; }
+            public int ExportFormatId { get; set; }
+           
+            public ExportFormat ExportFormat
+            {
+                get { return (ExportFormat)ExportFormatId; }
+                set { ExportFormatId = (int)value; }
+            }
+
+          
+        }
+
+        public enum ExportFormat
+        {
+            SqlToExcel,
+            SqlToTxt,
+            SqlToXml
+        }
         public class User
         {
             public int Id { get; set; }
