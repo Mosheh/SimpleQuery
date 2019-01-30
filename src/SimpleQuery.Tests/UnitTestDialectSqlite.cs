@@ -309,6 +309,8 @@ namespace SimpleQuery.Tests
 
                 conn.Insert<ArchiveModel>(archive);
 
+                var files = conn.GetAll<ArchiveModel>();
+
                 conn.Execute("drop table [ArchiveModel]");
 
                 conn.ReleaseMemory();
@@ -367,7 +369,13 @@ namespace SimpleQuery.Tests
 
         public class ArchiveModel
         {
+            public ArchiveModel()
+            {
+                this.Date = DateTime.Now;
+            }
             public int Id { get; set; }
+            public DateTime Date { get; set; }
+
             public byte[] Content { get; set; }
         }
     }
