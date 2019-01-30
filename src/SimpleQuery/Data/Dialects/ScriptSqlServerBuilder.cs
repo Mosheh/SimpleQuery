@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -17,6 +18,8 @@ namespace SimpleQuery.Data.Dialects
     public class ScriptSqlServerBuilder : ScriptCommon, IScriptBuilder
     {
         public Domain.Data.DbServerType DbServerType => Domain.Data.DbServerType.SqlServer;
+
+        public IReadOnlyList<DbSimpleParameter> Parameters => throw new NotImplementedException();
 
         public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
@@ -110,6 +113,11 @@ namespace SimpleQuery.Data.Dialects
             var reader = ExecuteReader("SELECT SCOPE_IDENTITY()", dbConnection, transaction);
             if (reader.Read())
             {
+                var expandoObject = new ExpandoObject() as IDictionary<string, object>;
+
+                for (var i = 0; i < reader.FieldCount; i++)
+                    expandoObject.Add(reader.GetName(i), reader[i]);
+
                 var value = reader.GetDecimal(0);
                 reader.Close();
                 return value;
@@ -250,6 +258,58 @@ namespace SimpleQuery.Data.Dialects
             var select = GetSelectCommand<T>(obj);
             var where = GetWhereCommand<T>(expression);
             return select + " " + where;
+        }
+
+        public Tuple<string, IEnumerable<DbSimpleParameter>> GetInsertCommandParameters<T>(T obj, bool includeKey = false) where T : class, new()
+        {
+            var allProperties = ScriptCommon.GetValidProperty<T>();
+            var entityName = obj.GetType().Name;
+
+            var keyName = GetKeyProperty(allProperties.ToArray<PropertyInfo>());
+            if (keyName == null && includeKey)
+                throw new Exception($"Key column not found for {entityName}");
+
+            List<DbSimpleParameter> parameters = new List<DbSimpleParameter>();
+
+            var strBuilderSql = new StringBuilder($"insert into [{entityName}] (");
+            foreach (var item in allProperties)
+            {
+                if (keyName == item && !includeKey)
+                    continue;
+
+                strBuilderSql.Append($"[{item.Name}]");
+
+                if (item != allProperties.Last())
+                    strBuilderSql.Append(", ");
+                else
+                    strBuilderSql.Append(") values (");
+            }
+            //Values
+            foreach (var item in allProperties)
+            {
+                if (keyName == item && !includeKey)
+                    continue;
+
+                strBuilderSql.Append($"@{item.Name}");
+                parameters.Add(new DbSimpleParameter(item.Name, GetParamType(item), GetParamSize(item), DataFormatter.GetValueForParameter(item, obj, this.DbServerType)));
+                if (item != allProperties.Last())
+                    strBuilderSql.Append(", ");
+                else
+                    strBuilderSql.Append(")");
+            }
+
+            var sql = strBuilderSql.ToString();
+            return new Tuple<string, IEnumerable<DbSimpleParameter>> (sql, parameters);
+        }
+
+        public string GetUpdateCommandParameters<T>(T obj) where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        Tuple<string, IEnumerable<DbSimpleParameter>> IScriptBuilder.GetUpdateCommandParameters<T>(T obj)
+        {
+            throw new NotImplementedException();
         }
     }
 }

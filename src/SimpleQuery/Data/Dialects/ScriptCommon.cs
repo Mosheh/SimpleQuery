@@ -40,6 +40,41 @@ namespace SimpleQuery.Data.Dialects
                 p => IsPrimitive(p.PropertyType)
                 && !IsIgnoreProperty(p));
         }
+        protected int GetParamSize(PropertyInfo item)
+        {
+            switch (item.PropertyType.Name)
+            {
+                case "Int32":
+                    return 11;
+                case "String":
+                    return 254;
+                case "Double":
+                    return 11;
+                default:
+                    return 11;
+                    
+            }
+        }
+
+        protected DbType GetParamType(PropertyInfo item)
+        {
+            switch (item.PropertyType.Name)
+            {
+                case "Int32":
+                    return   DbType.Int32;
+                case "String":
+                    return  DbType.String;
+                case "Double":
+                    return DbType.Double;
+                case "Decimal":
+                    return DbType.Decimal;
+                case "Byte[]":
+                    return DbType.Binary;
+                default:
+                    return DbType.String ;
+
+            }
+        }
 
         internal static bool IsPrimitive(Type t)
         {

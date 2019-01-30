@@ -223,7 +223,7 @@ namespace SimpleQuery.Tests
                     Assert.AreEqual(1, users.Count());
                     Assert.AreEqual("Moisés", users.ToList()[0].Name);
                     Assert.AreEqual(1, users.ToList()[0].Id);
-
+                    
                     conn.Execute("drop table [User]");
                     conn.ReleaseMemory();
                     conn.Close();
@@ -258,7 +258,7 @@ namespace SimpleQuery.Tests
 
                     var userFirst = conn.Select<User>(c => c.Email == user.Email);
                     var userSecond = conn.Select<User>(c => c.Id == 2);
-                    var userThird = conn.Select<User>(c => c.System);
+                    var userThird = conn.Select<User>(c => c.System==true);
                     var noSystem = conn.Select<User>(c => c.System == false);
                     var userRatting20 = conn.Select<User>(c => c.Ratting == 20);
                     var usersScore21 = conn.Select<User>(c => c.Scores == 21);
@@ -296,6 +296,7 @@ namespace SimpleQuery.Tests
         public void TestInsertFileSqlite()
         {
             var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            
             connection.Open();
 
             using (var conn = connection)
@@ -309,6 +310,11 @@ namespace SimpleQuery.Tests
                 conn.Insert<ArchiveModel>(archive);
 
                 conn.Execute("drop table [ArchiveModel]");
+
+                conn.ReleaseMemory();
+                conn.Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
 

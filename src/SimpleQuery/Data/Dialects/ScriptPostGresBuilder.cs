@@ -16,6 +16,8 @@ namespace SimpleQuery.Data.Dialects
     {
         public DbServerType DbServerType => DbServerType.PostGres;
 
+        public IReadOnlyList<DbSimpleParameter> Parameters => throw new NotImplementedException();
+
         public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
             var command = dbConnection.CreateCommand();
@@ -277,6 +279,21 @@ namespace SimpleQuery.Data.Dialects
             var select = GetSelectCommand<T>(obj);
             var where = GetWhereCommand<T>(expression);
             return select + " " + where;
+        }
+
+        public Tuple<string, IEnumerable<DbSimpleParameter>> GetInsertCommandParameters<T>(T obj, bool includeKey = false) where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetUpdateCommandParameters<T>(T obj) where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        Tuple<string, IEnumerable<DbSimpleParameter>> IScriptBuilder.GetUpdateCommandParameters<T>(T obj)
+        {
+            throw new NotImplementedException();
         }
     }
 }

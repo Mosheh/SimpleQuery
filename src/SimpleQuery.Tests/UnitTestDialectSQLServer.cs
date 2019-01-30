@@ -100,6 +100,8 @@ namespace SimpleQuery.Tests
                     var users = conn.Query<User>("select * from [User]");
 
                     Assert.AreEqual(2, users.Count());
+
+                    conn.Execute("drop table [User]");
                 }
             }
         }

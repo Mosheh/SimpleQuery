@@ -267,5 +267,20 @@ namespace SimpleQuery.Data.Dialects
             var where = GetWhereCommand<T>(expression);
             return select + " " + where;
         }
+
+        public Tuple<string, IEnumerable<DbSimpleParameter>> GetInsertCommandParameters<T>(T obj, bool includeKey = false) where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetUpdateCommandParameters<T>(T obj) where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        Tuple<string, IEnumerable<DbSimpleParameter>> IScriptBuilder.GetUpdateCommandParameters<T>(T obj)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

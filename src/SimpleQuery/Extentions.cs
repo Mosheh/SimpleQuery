@@ -49,20 +49,15 @@ namespace SimpleQuery
             if (wasClosed) dbConnection.Open();
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-            var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
 
-            var command = dbConnection.CreateCommand();
-
-            if (dbTransaction != null) command.Transaction = dbTransaction;
-
-            command.CommandText = insertCommand;
+            var command = GetCommand<T>(dbConnection, model, dbTransaction, scripBuilder);
+         
             var rowsCount = command.ExecuteNonQuery();
             Console.WriteLine($"{rowsCount} affected rows");
 
             var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
 
             if (wasClosed) dbConnection.Close();
-
             var keyProperty = scripBuilder.GetKeyPropertyModel<T>();
             if (keyProperty != null)
             {
@@ -70,6 +65,42 @@ namespace SimpleQuery
                 keyProperty.SetValue(model, convertedValue);
             }
             return model;
+        }
+
+        private static IDbCommand GetCommand<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder) where T: class, new()
+        {
+            var command = dbConnection.CreateCommand();
+
+            if (scripBuilder.DbServerType == Domain.Data.DbServerType.Sqlite)
+            {
+                var insertCommand = scripBuilder.GetInsertCommandParameters<T>(model, false);
+
+                foreach (var item in insertCommand.Item2)
+                {
+                    var param = command.CreateParameter();
+                    param.ParameterName = item.ParameterName;
+                    param.DbType = item.DbType;
+                    param.Value = item.Value;
+                    param.Size = item.Size;
+                    command.Parameters.Add(param);
+                }
+
+                if (dbTransaction != null) command.Transaction = dbTransaction;
+
+                command.CommandText = insertCommand.Item1;
+
+                return command;
+            }
+            else
+            {
+                var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
+
+                if (dbTransaction != null) command.Transaction = dbTransaction;
+
+                command.CommandText = insertCommand;
+
+                return command;
+            }
         }
 
         public static void Update<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)

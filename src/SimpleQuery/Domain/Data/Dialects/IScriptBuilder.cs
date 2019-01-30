@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleQuery.Data.Dialects;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -20,6 +21,8 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <returns>sql insert command</returns>
         string GetInsertCommand<T>(T obj,bool includeKey= false) where T : class, new();
 
+        Tuple<string, IEnumerable<DbSimpleParameter>> GetInsertCommandParameters<T>(T obj, bool includeKey = false) where T : class, new();
+
         /// <summary>
         /// Return update command
         /// </summary>
@@ -27,7 +30,9 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <param name="obj">Instace model</param>
         /// <returns>sql update command</returns>
         string GetUpdateCommand<T>(T obj) where T : class, new();
-       
+
+        Tuple<string, IEnumerable<DbSimpleParameter>> GetUpdateCommandParameters<T>(T obj) where T : class, new();
+
         /// <summary>
         /// Return select command from instance model
         /// </summary>
