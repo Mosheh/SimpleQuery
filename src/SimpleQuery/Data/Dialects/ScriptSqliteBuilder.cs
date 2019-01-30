@@ -164,6 +164,8 @@ namespace SimpleQuery.Data.Dialects
             return sql;
         }
 
+
+
         public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
             var reader = ExecuteReader("SELECT last_insert_rowid()", dbConnection, transaction);

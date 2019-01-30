@@ -246,9 +246,9 @@ namespace SimpleQuery.Tests
                 {
                     IScriptBuilder builder = new ScriptSqliteBuilder();
 
-                    User user = new User() { Name = "Moisés", Email = "moises@gmail.com", Ratting=10, Scores = 20 };
-                    User user2 = new User() { Name = "Miranda", Email = "miranda@gmail.com", Ratting=20, Scores = 50 };
-                    User user3 = new User() { Name = "Moshe", Email = "moshe@gmail.com", Ratting=20, Scores = 21, System = true };
+                    User user = new User() { Name = "Moisés", Email = "moises@gmail.com", Ratting = 10, Scores = 20 };
+                    User user2 = new User() { Name = "Miranda", Email = "miranda@gmail.com", Ratting = 20, Scores = 50 };
+                    User user3 = new User() { Name = "Moshe", Email = "moshe@gmail.com", Ratting = 20, Scores = 21, System = true };
 
                     var createTableScript = builder.GetCreateTableCommand<User>();
                     builder.Execute(createTableScript, conn);
@@ -259,7 +259,7 @@ namespace SimpleQuery.Tests
                     var userFirst = conn.Select<User>(c => c.Email == user.Email);
                     var userSecond = conn.Select<User>(c => c.Id == 2);
                     var userThird = conn.Select<User>(c => c.System);
-                    var noSystem = conn.Select<User>(c => c.System==false);
+                    var noSystem = conn.Select<User>(c => c.System == false);
                     var userRatting20 = conn.Select<User>(c => c.Ratting == 20);
                     var usersScore21 = conn.Select<User>(c => c.Scores == 21);
 
@@ -290,6 +290,26 @@ namespace SimpleQuery.Tests
             var resultadoEsperado = "create table [Cliente] ([Id] integer not null primary key autoincrement, [DataCadastro] datetime, [Nome] text, [Ativo] boolean, [TotalPedidos] integer null, [ValorTotalNotasFiscais] double, [Credito] decimal(18,6), [UltimoValorDeCompra] decimal(18,6) null)";
 
             Assert.AreEqual(resultadoEsperado, createTableScript);
+        }
+
+        [TestMethod]
+        public void TestInsertFileSqlite()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            connection.Open();
+
+            using (var conn = connection)
+            {
+                var builder = conn.GetScriptBuild();
+                var archive = new ArchiveModel() { Content = Properties.Resources.conduites_1 };
+
+                var createTableScript = builder.GetCreateTableCommand<ArchiveModel>();
+                conn.Execute(createTableScript);
+
+                conn.Insert<ArchiveModel>(archive);
+
+                conn.Execute("drop table [ArchiveModel]");
+            }
         }
 
         public class Cliente
@@ -337,6 +357,12 @@ namespace SimpleQuery.Tests
                     throw new Exception("Invalid password or passwords not matched");
 
             }
+        }
+
+        public class ArchiveModel
+        {
+            public int Id { get; set; }
+            public byte[] Content { get; set; }
         }
     }
 }

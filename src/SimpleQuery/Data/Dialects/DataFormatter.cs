@@ -53,6 +53,8 @@ namespace SimpleQuery.Data.Dialects
                     var nfiDecimal = new NumberFormatInfo();
                     nfiDecimal.NumberDecimalSeparator = ".";
                     return Convert.ToDecimal(item.GetValue(obj)).ToString(nfiDecimal);
+                case "Byte[]":
+                    return (item.GetValue(obj));
                 default:
                     return item.GetValue(obj);
 

@@ -12,7 +12,7 @@ namespace SimpleQuery.Data.Dialects
         public virtual PropertyInfo GetKeyProperty(PropertyInfo[] allProperties)
         {
             var keyProperty = allProperties.ToList().Find(c => c.Name.ToUpper() == "ID" || c.Name.ToUpper() == "DocEntry" ||
-            c.GetCustomAttributes().Any(p=>p is System.ComponentModel.DataAnnotations.KeyAttribute));
+            c.GetCustomAttributes().Any(p => p is System.ComponentModel.DataAnnotations.KeyAttribute));
 
             return keyProperty;
         }
@@ -34,10 +34,10 @@ namespace SimpleQuery.Data.Dialects
             return propertyInfo.GetCustomAttributes().Where(c => c is System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute).Any();
         }
 
-        internal static IEnumerable<PropertyInfo> GetValidProperty<T>() where T:class, new()
+        internal static IEnumerable<PropertyInfo> GetValidProperty<T>() where T : class, new()
         {
             return new T().GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList().Where(
-                p=> IsPrimitive(p.PropertyType)
+                p => IsPrimitive(p.PropertyType)
                 && !IsIgnoreProperty(p));
         }
 
@@ -46,6 +46,7 @@ namespace SimpleQuery.Data.Dialects
             // TODO: put any type here that you consider as primitive as I didn't
             // quite understand what your definition of primitive type is
             return new[] {
+                typeof(byte[]),
             typeof(string),
             typeof(char),
             typeof(bool),
