@@ -325,7 +325,6 @@ namespace SimpleQuery.Tests
         public void TestInsertAndSelectFileSqlite()
         {
             var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
-
             connection.Open();
 
             using (var conn = connection)
