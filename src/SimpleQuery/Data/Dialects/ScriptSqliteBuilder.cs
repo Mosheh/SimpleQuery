@@ -16,7 +16,7 @@ namespace SimpleQuery.Data.Dialects
     public class ScriptSqliteBuilder : ScriptCommon, IScriptBuilder
     {
         public DbServerType DbServerType => DbServerType.Sqlite;
-                public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction transaction = null)
+        public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
             var command = dbConnection.CreateCommand();
             if (transaction != null)
@@ -163,7 +163,7 @@ namespace SimpleQuery.Data.Dialects
             return sql;
         }
 
-       
+
 
         public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
@@ -275,7 +275,7 @@ namespace SimpleQuery.Data.Dialects
                     continue;
 
                 strBuilderSql.Append($"@{item.Name}");
-                parameters.Add(new DbSimpleParameter(item.Name, GetParamType(item), GetParamSize(item), DataFormatter.GetValueForParameter(item,obj, this.DbServerType)));
+                parameters.Add(new DbSimpleParameter(item.Name, GetParamType(item), GetParamSize(item), DataFormatter.GetValueForParameter(item, obj, this.DbServerType)));
                 if (item != allProperties.Last())
                     strBuilderSql.Append(", ");
                 else
@@ -286,14 +286,36 @@ namespace SimpleQuery.Data.Dialects
             return new Tuple<string, IEnumerable<DbSimpleParameter>>(sql, parameters);
         }
 
-        public string GetUpdateCommandParameters<T>(T obj) where T : class, new()
-        {
-            throw new NotImplementedException();
-        }
-
         Tuple<string, IEnumerable<DbSimpleParameter>> IScriptBuilder.GetUpdateCommandParameters<T>(T obj)
         {
-            throw new NotImplementedException();
+            var allProperties = ScriptCommon.GetValidProperty<T>();
+            var entityName = obj.GetType().Name;
+
+            var keyProperty = GetKeyProperty(allProperties);
+            if (keyProperty == null)
+                throw new Exception($"Key column not found for {entityName}");
+
+            List<DbSimpleParameter> parameters = new List<DbSimpleParameter>();
+
+            var strBuilderSql = new StringBuilder($"update [{entityName}] set ");
+            foreach (var item in allProperties)
+            {
+                if (keyProperty == item )
+                    continue;
+
+                strBuilderSql.Append($"[{item.Name}]=@{item.Name}");
+                parameters.Add(new DbSimpleParameter($"@{item.Name}", GetParamType(item), GetParamSize(item), DataFormatter.GetValueForParameter(item, obj, this.DbServerType)));
+
+                if (item != allProperties.Last())
+                    strBuilderSql.Append(", ");
+                else
+                    strBuilderSql.Append(" ");
+            }
+            
+            strBuilderSql.Append($" where [{keyProperty.Name}]={DataFormatter.GetValue(keyProperty, obj, this.DbServerType)}");
+
+            var sql = strBuilderSql.ToString();
+            return new Tuple<string, IEnumerable<DbSimpleParameter>> (sql, parameters);
         }
     }
 }

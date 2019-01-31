@@ -50,8 +50,8 @@ namespace SimpleQuery
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
 
-            var command = GetCommand<T>(dbConnection, model, dbTransaction, scripBuilder);
-         
+            var command = GetCommandInsert<T>(dbConnection, model, dbTransaction, scripBuilder);
+
             var rowsCount = command.ExecuteNonQuery();
             Console.WriteLine($"{rowsCount} affected rows");
 
@@ -67,7 +67,7 @@ namespace SimpleQuery
             return model;
         }
 
-        private static IDbCommand GetCommand<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder) where T: class, new()
+        private static IDbCommand GetCommandInsert<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder) where T : class, new()
         {
             var command = dbConnection.CreateCommand();
 
@@ -111,18 +111,52 @@ namespace SimpleQuery
             if (wasClosed) dbConnection.Open();
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-            var updateCommandText = scripBuilder.GetUpdateCommand<T>(model);
 
-            var command = dbConnection.CreateCommand();
+            var command = GetCommandUpdate<T>(dbConnection, model, dbTransaction, scripBuilder);
 
             if (dbTransaction != null) command.Transaction = dbTransaction;
 
-            command.CommandText = updateCommandText;
             var rowsCount = command.ExecuteNonQuery();
             Console.WriteLine($"{rowsCount} affected rows");
 
             if (wasClosed) dbConnection.Close();
 
+        }
+
+        private static IDbCommand GetCommandUpdate<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder) where T : class, new()
+        {
+            var command = dbConnection.CreateCommand();
+
+            if (scripBuilder.DbServerType == Domain.Data.DbServerType.Sqlite)
+            {
+                var updateCommand = scripBuilder.GetUpdateCommandParameters<T>(model);
+
+                foreach (var item in updateCommand.Item2)
+                {
+                    var param = command.CreateParameter();
+                    param.ParameterName = item.ParameterName;
+                    param.DbType = item.DbType;
+                    param.Value = item.Value;
+                    param.Size = item.Size;
+                    
+                    command.Parameters.Add(param);
+                }
+                if (dbTransaction != null) command.Transaction = dbTransaction;
+
+                command.CommandText = updateCommand.Item1;
+
+                return command;
+            }
+            else
+            {
+                var updateCommandText = scripBuilder.GetUpdateCommand<T>(model);
+
+                if (dbTransaction != null) command.Transaction = dbTransaction;
+
+                command.CommandText = updateCommandText;
+
+                return command;
+            }
         }
 
         public static void Delete<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
@@ -290,8 +324,8 @@ namespace SimpleQuery
                     conversion.AssemblyQualifiedName.Contains("System.Int64") ||
                     conversion.AssemblyQualifiedName.Contains("System.Decimal") ||
                     conversion.AssemblyQualifiedName.Contains("System.Double") ||
-                    conversion.AssemblyQualifiedName.Contains("System.Boolean")||
-                    conversion.AssemblyQualifiedName.Contains("System.String")||
+                    conversion.AssemblyQualifiedName.Contains("System.Boolean") ||
+                    conversion.AssemblyQualifiedName.Contains("System.String") ||
                     conversion.AssemblyQualifiedName.Contains("System.Byte[]"))
                     return null;
                 else

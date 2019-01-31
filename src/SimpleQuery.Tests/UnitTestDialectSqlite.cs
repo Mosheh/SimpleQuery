@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SQLite;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -338,6 +339,38 @@ namespace SimpleQuery.Tests
                 conn.Insert<ArchiveModel>(archive);
 
                 var files = conn.GetAll<ArchiveModel>();
+
+                conn.Execute("drop table [ArchiveModel]");
+
+                conn.ReleaseMemory();
+                conn.Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        [TestMethod]
+        public void TestUpdateFileSqlite()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+
+            connection.Open();
+
+            using (var conn = connection)
+            {
+                var builder = conn.GetScriptBuild();
+                var archive = new ArchiveModel() { Content = Properties.Resources.conduites_1 };
+
+                var createTableScript = builder.GetCreateTableCommand<ArchiveModel>();
+                conn.Execute(createTableScript);
+
+                conn.Insert<ArchiveModel>(archive);
+
+                var modelForUpdate = conn.Select<ArchiveModel>(c => c.Id == 1).FirstOrDefault();
+                var bytes = (Byte[])new ImageConverter().ConvertTo(Properties.Resources.wwf_logo_design, typeof(Byte[]));
+                modelForUpdate.Content = bytes;
+
+                conn.Update<ArchiveModel>(modelForUpdate);
 
                 conn.Execute("drop table [ArchiveModel]");
 
