@@ -32,6 +32,32 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void SQLServerExecuteReader()
+        {
+            var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLServer"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
+
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Cliente>(cliente);
+
+            cliente.Id = id;
+            cliente.Nome = "Moisés Miranda";
+            conn.Insert<Cliente>(cliente);
+
+            var reader = scriptBuilder.ExecuteReader("select * from Cliente", conn);
+            var data = new System.Data.DataTable();
+            data.Load(reader);
+
+            conn.Execute("drop table [Cliente]");
+
+            Assert.AreEqual(2, data.Rows.Count);
+        }
+
+        [TestMethod]
         public void SQLServerInsertModel()
         {
             
