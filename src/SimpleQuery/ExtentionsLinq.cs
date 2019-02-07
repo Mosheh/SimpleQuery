@@ -45,6 +45,38 @@ namespace SimpleQuery
             return listModel;
         }
 
+        public static IEnumerable<T> Select<T>(this IDbConnection dbConnection, string sqlCommandText)
+         where T : class, new()
+        {
+            var wasClosed = dbConnection.State == ConnectionState.Closed;
+
+            if (wasClosed) dbConnection.Open();
+
+            var type = typeof(T);
+            var cacheType = typeof(List<T>);
+            var instanceModel = new T();
+
+            var command = dbConnection.CreateCommand();
+            command.CommandText = sqlCommandText;
+            var reader = command.ExecuteReader();
+            var listModel = new List<T>();
+
+            var dataTable = new DataTable();
+            dataTable.Load(reader);
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                var newModel = GetModelByDataRow<T>(row);
+                listModel.Add(newModel);
+            }
+
+            if (wasClosed) dbConnection.Close();
+
+            reader.Close();
+
+            return listModel;
+        }
+
         public static IEnumerable<T> Query<T>(this IDbConnection dbConnection, string commandText)
         where T : class, new()
         {

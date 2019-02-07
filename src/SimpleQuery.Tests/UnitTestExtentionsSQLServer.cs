@@ -89,6 +89,24 @@ namespace SimpleQuery.Tests
             conn.Execute("drop table [Cliente]");
         }
 
+        [TestMethod]
+        public void SQLServerExecuteSqlCommand()
+        {
+            var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var cliente = new Cliente() { Nome = "Miranda" };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();
+            conn.Execute(createTableScript);
+            conn.Insert<Cliente>(cliente);
+            conn.Insert<Cliente>(cliente);
+            conn.Insert<Cliente>(cliente);
+            var clientes = conn.Select<Cliente>("select * from Cliente");
+            Assert.AreEqual(3, clientes.Count());
+            conn.Execute("drop table [Cliente]");
+        }
+
 
         [TestMethod]
         public void SQLServerSelectModel()
