@@ -61,7 +61,7 @@ namespace SimpleQuery.Tests
             var cliente = new Cliente() { Id = 1, DataCadastro = DateTime.Now, Nome = "Moisés", Ativo = true, TotalPedidos = 20, ValorTotalNotasFiscais = 2000.95, Credito = 10, UltimoValorDeCompra = 1000.95m };
 
             var insertScript = builder.GetInsertCommand<Cliente>(cliente);
-            var resultadoEsperado = $"insert into [Cliente] ([DataCadastro], [Nome], [Ativo], [TotalPedidos], [ValorTotalNotasFiscais], [Credito], [UltimoValorDeCompra]) values ('{cliente.DataCadastro.ToString("yyyy-MM-dd")}', 'Moisés', 1, 20, 2000.95, 10, 1000.95)";
+            var resultadoEsperado = $"insert into [Cliente] ([DataCadastro], [Nome], [Ativo], [TotalPedidos], [ValorTotalNotasFiscais], [Credito], [UltimoValorDeCompra]) values ('{cliente.DataCadastro.ToString("yyyy-MM-dd HH:mm:ss")}', 'Moisés', 1, 20, 2000.95, 10, 1000.95)";
 
             Assert.AreEqual(resultadoEsperado, insertScript);
         }
@@ -71,10 +71,13 @@ namespace SimpleQuery.Tests
         {
             IScriptBuilder builder = new ScriptSqliteBuilder();
 
-            var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = 1035.22m };
+            var cliente = new Cliente() { Id = 1, Nome = "Moisés",
+                Ativo = true, TotalPedidos = 55,
+                ValorTotalNotasFiscais = 1000.55,
+                Credito = 2000.53m, UltimoValorDeCompra = 1035.22m };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update [Cliente] set [DataCadastro]='0001-01-01', [Nome]='Moisés', [Ativo]=1, [TotalPedidos]=55, [ValorTotalNotasFiscais]=1000.55, [Credito]=2000.53, [UltimoValorDeCompra]=1035.22 where [Id]=1";
+            var resultadoEsperado = "update [Cliente] set [DataCadastro]='0001-01-01 00:00:00', [Nome]='Moisés', [Ativo]=1, [TotalPedidos]=55, [ValorTotalNotasFiscais]=1000.55, [Credito]=2000.53, [UltimoValorDeCompra]=1035.22 where [Id]=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }
@@ -84,10 +87,13 @@ namespace SimpleQuery.Tests
         {
             IScriptBuilder builder = new ScriptSqliteBuilder();
 
-            var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true, TotalPedidos = 55, ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m, UltimoValorDeCompra = null };
+            var cliente = new Cliente() { Id = 1, Nome = "Moisés",
+                Ativo = true, TotalPedidos = 55,
+                ValorTotalNotasFiscais = 1000.55, Credito = 2000.53m,
+                UltimoValorDeCompra = null };
 
             var sqlUpdate = builder.GetUpdateCommand<Cliente>(cliente);
-            var resultadoEsperado = "update [Cliente] set [DataCadastro]='0001-01-01', [Nome]='Moisés', [Ativo]=1, [TotalPedidos]=55, [ValorTotalNotasFiscais]=1000.55, [Credito]=2000.53, [UltimoValorDeCompra]=null where [Id]=1";
+            var resultadoEsperado = "update [Cliente] set [DataCadastro]='0001-01-01 00:00:00', [Nome]='Moisés', [Ativo]=1, [TotalPedidos]=55, [ValorTotalNotasFiscais]=1000.55, [Credito]=2000.53, [UltimoValorDeCompra]=null where [Id]=1";
 
             Assert.AreEqual(resultadoEsperado, sqlUpdate);
         }

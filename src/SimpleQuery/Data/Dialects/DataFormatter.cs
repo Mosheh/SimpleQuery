@@ -41,7 +41,7 @@ namespace SimpleQuery.Data.Dialects
                     else
                         return ((bool)item.GetValue(obj)) == true ? "1" : "0";
                 case "DateTime":
-                    return $"'{((DateTime)item.GetValue(obj)).ToString("yyyy-MM-dd")}'";
+                    return $"'{((DateTime)item.GetValue(obj)).ToString("yyyy-MM-dd HH:mm:ss")}'";
 
                 case "Nullable`1":
                     return GetNullableValue(item, obj, dbServerType);
