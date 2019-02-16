@@ -197,6 +197,7 @@ namespace SimpleQuery.Tests
                     Assert.AreEqual(2, clientes.Count());
                     Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
                     Assert.AreEqual("José", clientes.ToList()[1].Nome);
+                    Assert.AreEqual(cliente.DataCadastro.ToString("dd/MM/yyyy"), clientes.ToList()[0].DataCadastro.ToString("dd/MM/yyyy"));
 
                     conn.Execute("drop table [Cliente]");
                     conn.ReleaseMemory();

@@ -191,7 +191,7 @@ namespace SimpleQuery
         /// <param name="dbConnection">Connection</param>
         /// <param name="commandText">sql text command</param>
         /// <returns></returns>
-        public static int Execute(this IDbConnection dbConnection, string commandText)
+        public static int Execute(this IDbConnection dbConnection, string commandText, IDbTransaction transaction=null)
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 
@@ -199,7 +199,7 @@ namespace SimpleQuery
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
 
-            var command = dbConnection.CreateCommand();
+            var command = dbConnection.CreateCommand(); if (transaction != null) command.Transaction = transaction;
             command.CommandText = commandText;
             var rowsCount = command.ExecuteNonQuery();
 

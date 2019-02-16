@@ -175,6 +175,61 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void TestInsertOperationWithDatetimeSqlServer()
+        {
+            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            connection.Open();
+
+           
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString))
+            {
+                conn.Open();
+                var trans = conn.BeginTransaction();
+                IScriptBuilder builder = new ScriptSqlServerBuilder();
+
+                var doc = new Doc() { DocDate = new DateTime(2019, 02, 15, 23, 29, 29), Value = 1000 };
+
+                var createTableScript = builder.GetCreateTableCommand<Doc>();
+                builder.Execute(createTableScript, conn, trans);
+
+                var lastId = conn.InsertRereturnId<Doc>(doc, trans);
+                Assert.AreEqual(1, lastId);
+                
+                trans.Rollback();
+
+            }
+            
+
+        }
+
+        [TestMethod]
+        public void TestUpdateOperationWithDatetimeSqlServer()
+        {
+            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            connection.Open();
+
+            using (var transaction = new TransactionScope())
+            {
+                IScriptBuilder builder = new ScriptSqlServerBuilder();
+
+                var doc = new Doc() { DocDate = new DateTime(2019, 02, 15, 23, 29, 29), Value = 1000 };
+
+                var createTableScript = builder.GetCreateTableCommand<Doc>();
+                builder.Execute(createTableScript, connection);
+
+                var lastId = connection.Insert<Doc>(doc);
+
+                doc.Value = 2000;
+                connection.Update<Doc>(doc);
+                var docFromDatabase = connection.Select<Doc>(c => c.Id == 1).FirstOrDefault();
+                
+                Assert.AreEqual(2000, docFromDatabase.Value);
+                connection.Execute("drop table [Doc]");
+                transaction.Complete();
+            }
+        }
+
+        [TestMethod]
         public void TestSelectOperationSqlServer()
         {
             var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
@@ -240,6 +295,13 @@ namespace SimpleQuery.Tests
             var resultadoEsperado = "create table [Cliente] ([Id] int not null identity, [Nome] nvarchar(255), [Ativo] bit, [TotalPedidos] int, [ValorTotalNotasFiscais] float, [Credito] decimal(18,6), [UltimoValorDeCompra] decimal(18,6), primary key ([Id]))";
 
             Assert.AreEqual(resultadoEsperado, createTableScript);
+        }
+
+        public class Doc
+        {
+            public int Id { get; set; }
+            public DateTime DocDate { get; set; }
+            public decimal Value { get; set; }
         }
 
         public class Cliente
