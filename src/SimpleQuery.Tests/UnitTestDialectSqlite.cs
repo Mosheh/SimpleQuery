@@ -207,6 +207,43 @@ namespace SimpleQuery.Tests
                 }
             }
         }
+
+        [TestCategory("CRUD")]
+        [TestMethod]
+        public void TestSelectOperationDateTimeSqlite()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            connection.Open();
+
+            using (var scope = new TransactionScope())
+            {
+                using (var conn = connection)
+                {
+                    IScriptBuilder builder = conn.GetScriptBuild();
+
+                    var model1 = new EventScheduler() { Description= "Test"};
+                    var model2 = new EventScheduler() { Description= "Test 2", DateStart = new DateTime (2019, 03, 1)};
+
+                    var createTableScript = builder.GetCreateTableCommand<EventScheduler>();
+                    
+                    builder.Execute(createTableScript, conn);
+                    conn.Insert<EventScheduler>(model1);
+                    conn.Insert<EventScheduler>(model2);
+
+                    var models = conn.GetAll<EventScheduler>();
+                    Assert.AreEqual(2, models.Count());
+                    Assert.AreEqual(new DateTime(2019, 2, 18, 12, 30, 30), models.ToList()[0].DateStart);
+                    Assert.AreEqual(new DateTime(2019, 03, 1), models.ToList()[1].DateStart);
+
+                    conn.Execute("drop table [EventScheduler]");
+                    conn.ReleaseMemory();
+                    conn.Close();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+            }
+        }
+
         [TestCategory("CRUD")]
         [TestMethod]
         public void TestSelectWithWhereMailOperationSqlite()
@@ -452,6 +489,13 @@ namespace SimpleQuery.Tests
             }
 
           
+        }
+
+        public class EventScheduler
+        {
+            public int Id { get; set; }
+            public DateTime DateStart { get; set; } = new DateTime(2019, 2, 18, 12, 30, 30);
+            public string Description { get; set; } = "Test";
         }
 
         public enum ExportFormat
