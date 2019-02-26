@@ -42,6 +42,13 @@ namespace SimpleQuery.Domain.Data.Dialects
         string GetSelectCommand<T>(T obj) where T : class, new();
 
         /// <summary>
+        /// Return table name based in Table Attribute or Class name
+        /// </summary>
+        /// <typeparam name="T">Type</typeparam>
+        /// <returns></returns>
+        string GetEntityName<T>();
+
+        /// <summary>
         /// Return select command from instance model
         /// </summary>
         /// <typeparam name="T">Class type</typeparam>

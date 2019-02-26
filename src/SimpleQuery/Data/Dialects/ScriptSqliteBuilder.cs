@@ -49,7 +49,7 @@ namespace SimpleQuery.Data.Dialects
         public string GetCreateTableCommand<T>() where T : class, new()
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = new T().GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var keyProperty = GetKeyProperty(allProperties);
 
@@ -111,7 +111,7 @@ namespace SimpleQuery.Data.Dialects
         public string GetDeleteCommand<T>(T obj, object key) where T : class, new()
         {
             var allProperties = obj.GetType().GetProperties();
-            var entityName = obj.GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var keyName = GetKeyProperty(allProperties);
             if (keyName == null)
@@ -127,7 +127,7 @@ namespace SimpleQuery.Data.Dialects
         public string GetInsertCommand<T>(T obj, bool includeKey = false) where T : class, new()
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = obj.GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var keyName = GetKeyProperty(allProperties);
             if (keyName == null && includeKey)
@@ -189,7 +189,7 @@ namespace SimpleQuery.Data.Dialects
         public string GetSelectCommand<T>(T obj) where T : class, new()
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = obj.GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var strBuilderSql = new StringBuilder($"select ");
             foreach (var item in allProperties)
@@ -209,7 +209,7 @@ namespace SimpleQuery.Data.Dialects
         public string GetUpdateCommand<T>(T obj) where T : class, new()
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = obj.GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var keyProperty = GetKeyProperty(allProperties);
             if (keyProperty == null)
@@ -248,7 +248,7 @@ namespace SimpleQuery.Data.Dialects
         public Tuple<string, IEnumerable<DbSimpleParameter>> GetInsertCommandParameters<T>(T obj, bool includeKey = false) where T : class, new()
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = obj.GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var keyName = GetKeyProperty(allProperties);
             if (keyName == null && includeKey)
@@ -289,7 +289,7 @@ namespace SimpleQuery.Data.Dialects
         Tuple<string, IEnumerable<DbSimpleParameter>> IScriptBuilder.GetUpdateCommandParameters<T>(T obj)
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = obj.GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var keyProperty = GetKeyProperty(allProperties);
             if (keyProperty == null)

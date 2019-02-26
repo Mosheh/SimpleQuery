@@ -76,6 +76,26 @@ namespace SimpleQuery.Data.Dialects
             }
         }
 
+        public string GetEntityName<T>()
+        {
+            var entityType = typeof(T);
+
+            var attibutes = entityType.GetCustomAttributes<System.ComponentModel.DataAnnotations.Schema.TableAttribute>();
+
+            if (!attibutes.Any())
+            {
+                return entityType.Name;
+            }
+            else
+            {
+                var firstAttribute = attibutes.FirstOrDefault();
+                if (string.IsNullOrEmpty(firstAttribute.Name))
+                    return entityType.Name;
+                else
+                    return firstAttribute.Name;
+            }
+        }
+
         internal static bool IsPrimitive(Type t)
         {
             // TODO: put any type here that you consider as primitive as I didn't

@@ -171,6 +171,30 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void SqliteAttributeTableTest()
+        {
+            var conn = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var invoice = new Invoice() {  Customer = "Miranda", Value=100 };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Invoice>();
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Invoice>(invoice);
+
+            var clientes = conn.Select<Invoice>(c => c.Id == 1);
+
+            Assert.AreEqual(1, clientes.Count());
+            Assert.AreEqual("Miranda", clientes.ToList()[0].Customer);
+            conn.Execute("drop table [Invoices]");
+
+            conn.ReleaseMemory();
+            conn.Close();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        [TestMethod]
         public void SqliteSelectContractModel()
         {
             var conn = new SQLiteConnection($"Data Source={GetFileNameDb()}");

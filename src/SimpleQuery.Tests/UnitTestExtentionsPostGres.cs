@@ -3,6 +3,7 @@ using Npgsql;
 using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
@@ -193,6 +194,15 @@ namespace SimpleQuery.Tests
     {
         public int Id { get; set; }
         public string Nome { get; set; }
+        public Endereco Endereco { get; set; }
+    }
+
+    [Table("Invoices")]
+    public class Invoice
+    {
+        public int Id { get; set; }
+        public string Customer{ get; set; }
+        public double Value { get; set; }
         public Endereco Endereco { get; set; }
     }
 
