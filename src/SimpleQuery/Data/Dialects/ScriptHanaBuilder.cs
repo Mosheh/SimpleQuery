@@ -181,7 +181,7 @@ namespace SimpleQuery.Data.Dialects
         public string GetCreateTableCommand<T>() where T : class, new()
         {
             var allProperties = ScriptCommon.GetValidProperty<T>();
-            var entityName = new T().GetType().Name;
+            var entityName = GetEntityName<T>();
 
             var keyProperty = GetKeyProperty(allProperties);
 
