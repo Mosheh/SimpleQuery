@@ -107,5 +107,50 @@ namespace SimpleQuery
 
             return listModel;
         }
+
+        public static T Scalar<T>(this IDbConnection dbConnection, string commandText)
+        where T : struct
+
+        {
+            var wasClosed = dbConnection.State == ConnectionState.Closed;
+
+            if (wasClosed) dbConnection.Open();
+
+            var type = typeof(T);
+            var instanceModel = new T();
+
+            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+            var reader = scripBuilder.ExecuteReader(commandText, dbConnection);
+            if (!reader.Read())
+                throw new Exception("Isn't possible open DataReader");
+            object objectRead=null;
+            switch (type.Name)
+            {
+                case "Int32":
+                    objectRead = ChangeType(reader.GetInt32(0), typeof(T));
+                    break;
+                case "Decimal":
+                    objectRead = ChangeType(reader.GetDecimal(0), typeof(T));
+                    break;
+                case "Double":
+                     objectRead = ChangeType(reader.GetDouble(0), typeof(T));
+                    break;
+                case "Float":
+                     objectRead = ChangeType(reader.GetFloat(0), typeof(T));
+                    break;
+                case "String":
+                     objectRead = ChangeType(reader.GetString(0), typeof(T));
+                    break;
+                default:
+                    throw new Exception($"The type { typeof(T).Name} is not mapped");
+            }
+            
+
+            if (wasClosed) dbConnection.Close();
+
+            reader.Close();
+
+            return (T) objectRead;
+        }
     }
 }
