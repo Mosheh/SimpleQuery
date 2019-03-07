@@ -469,9 +469,41 @@ namespace SimpleQuery.Tests
 
                 conn.Insert<ModelWithEnum>(model);
 
-                var id = conn.Scalar<int>("Select Id from [ModelWithEnum]");
+                var id = conn.Scalar<int>("Select Id from [ModelWithEnum]").First();
 
                 Assert.AreEqual(1, id);
+                conn.Execute("drop table [ModelWithEnum]");
+
+                conn.ReleaseMemory();
+                conn.Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        [TestMethod]
+        public void TestSelectReturningListPrimitiveType()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+
+            connection.Open();
+
+            using (var conn = connection)
+            {
+                var builder = conn.GetScriptBuild();
+                var model = new ModelWithEnum() { Email = "", ExportFormat = ExportFormat.SqlToExcel };
+
+                var createTableScript = builder.GetCreateTableCommand<ModelWithEnum>();
+                conn.Execute(createTableScript);
+
+                conn.Insert<ModelWithEnum>(model);
+                conn.Insert<ModelWithEnum>(model);
+
+                var Ids = conn.Scalar<int>("Select Id from [ModelWithEnum]");
+
+                Assert.AreEqual(2, Ids.Count());
+                Assert.AreEqual(1, Ids.First());
+                Assert.AreEqual(2, Ids.Last());
                 conn.Execute("drop table [ModelWithEnum]");
 
                 conn.ReleaseMemory();
@@ -571,3 +603,4 @@ namespace SimpleQuery.Tests
         }
     }
 }
+
