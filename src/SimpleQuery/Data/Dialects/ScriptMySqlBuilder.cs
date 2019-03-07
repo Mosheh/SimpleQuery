@@ -255,7 +255,12 @@ namespace SimpleQuery.Data.Dialects
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// Get update command
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public string GetUpdateCommandParameters<T>(T obj) where T : class, new()
         {
             throw new NotImplementedException();
@@ -265,8 +270,12 @@ namespace SimpleQuery.Data.Dialects
         {
             throw new NotImplementedException();
         }
-
-        public string GetEntityName<T>() 
+        /// <summary>
+        /// Get entity name from model
+        /// </summary>
+        /// <typeparam name="T">Model</typeparam>
+        /// <returns>Entity name</returns>
+        public new string GetEntityName<T>() 
         {
             return base.GetEntityName<T>();
         }

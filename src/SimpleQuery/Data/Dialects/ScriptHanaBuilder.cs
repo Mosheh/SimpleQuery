@@ -283,8 +283,12 @@ namespace SimpleQuery.Data.Dialects
         {
             throw new NotImplementedException();
         }
-
-        public string GetEntityName<T>() 
+        /// <summary>
+        /// Get entity name from model
+        /// </summary>
+        /// <typeparam name="T">Model</typeparam>
+        /// <returns>Entity name</returns>
+        public new string GetEntityName<T>() 
         {
             return base.GetEntityName<T>();
         }

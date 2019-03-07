@@ -11,6 +11,13 @@ namespace SimpleQuery
 {
     public static partial class Extentions
     {
+        /// <summary>
+        /// Get typed list model
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="whereExpression">where linq criterion, when pass it the same is translate to sql command</param>
+        /// <returns></returns>
         public static IEnumerable<T> Select<T>(this IDbConnection dbConnection, Expression<Func<T, bool>> whereExpression)
          where T : class, new()
         {
@@ -44,7 +51,13 @@ namespace SimpleQuery
 
             return listModel;
         }
-
+        /// <summary>
+        /// Get type list model
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="sqlCommandText">Sql command</param>
+        /// <returns></returns>
         public static IEnumerable<T> Select<T>(this IDbConnection dbConnection, string sqlCommandText)
          where T : class, new()
         {
@@ -76,7 +89,13 @@ namespace SimpleQuery
 
             return listModel;
         }
-
+        /// <summary>
+        /// Get typed list model
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="commandText">Sql command</param>
+        /// <returns></returns>
         public static IEnumerable<T> Query<T>(this IDbConnection dbConnection, string commandText)
         where T : class, new()
         {
@@ -107,7 +126,13 @@ namespace SimpleQuery
 
             return listModel;
         }
-
+        /// <summary>
+        /// Get primitive types as List
+        /// </summary>
+        /// <typeparam name="T">Primitive type like a struct</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="commandText">Sql command</param>
+        /// <returns></returns>
         public static IEnumerable<T> Scalar<T>(this IDbConnection dbConnection, string commandText)
         where T : struct
 

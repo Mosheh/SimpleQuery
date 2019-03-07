@@ -15,7 +15,14 @@ namespace SimpleQuery
     public static partial class Extentions
     {
         private static readonly ConcurrentDictionary<RuntimeTypeHandle, string> GetQueries = new ConcurrentDictionary<RuntimeTypeHandle, string>();
-
+        /// <summary>
+        /// Insert model and return last id
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="model">Instance model</param>
+        /// <param name="dbTransaction">Transaction database</param>
+        /// <returns></returns>
         public static int InsertRereturnId<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
             where T : class, new()
         {
@@ -40,7 +47,14 @@ namespace SimpleQuery
 
             return Convert.ToInt32(lastId);
         }
-
+        /// <summary>
+        /// Insert model in the database
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="model">Instance model</param>
+        /// <param name="dbTransaction">Transaction database</param>
+        /// <returns></returns>
         public static T Insert<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
            where T : class, new()
         {
@@ -102,7 +116,13 @@ namespace SimpleQuery
                 return command;
             }
         }
-
+        /// <summary>
+        /// Update data model
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="model"></param>
+        /// <param name="dbTransaction"></param>
         public static void Update<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
            where T : class, new()
         {
@@ -158,7 +178,13 @@ namespace SimpleQuery
                 return command;
             }
         }
-
+        /// <summary>
+        /// Delete model from database
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="model">Instance model</param>
+        /// <param name="dbTransaction">Transaction database</param>
         public static void Delete<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
           where T : class, new()
         {
@@ -252,7 +278,14 @@ namespace SimpleQuery
 
             return listModel;
         }
-
+        /// <summary>
+        /// Get all records from database in typed model
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <param name="dbConnection">DbConnection</param>
+        /// <param name="model">Instance model</param>
+        /// <param name="dbTransaction">Transaction database</param>
+        /// <returns></returns>
         public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction)
           where T : class, new()
         {
@@ -303,7 +336,12 @@ namespace SimpleQuery
 
             return model;
         }
-
+        /// <summary>
+        /// Convert a type object to another
+        /// </summary>
+        /// <param name="value">Source object</param>
+        /// <param name="conversion">Destination object</param>
+        /// <returns></returns>
         public static object ChangeType(object value, Type conversion)
         {
             var t = conversion;
@@ -334,7 +372,11 @@ namespace SimpleQuery
             return Convert.ChangeType(value, t);
         }
 
-
+        /// <summary>
+        /// Get script builder instance
+        /// </summary>
+        /// <param name="dbConnection"></param>
+        /// <returns></returns>
         public static IScriptBuilder GetScriptBuild(this IDbConnection dbConnection)
         {
             var name = dbConnection.GetType().Namespace;
