@@ -513,6 +513,34 @@ namespace SimpleQuery.Tests
             }
         }
 
+        [TestMethod]
+        public void TestSelectReturningListPrimitiveEmptyArray()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+
+            connection.Open();
+
+            using (var conn = connection)
+            {
+                var builder = conn.GetScriptBuild();
+                var model = new ModelWithEnum() { Email = "", ExportFormat = ExportFormat.SqlToExcel };
+
+                var createTableScript = builder.GetCreateTableCommand<ModelWithEnum>();
+                conn.Execute(createTableScript);                
+
+                var Ids = conn.Scalar<int>("Select Id from [ModelWithEnum]");
+
+                Assert.AreEqual(0, Ids.Count());
+                
+                conn.Execute("drop table [ModelWithEnum]");
+
+                conn.ReleaseMemory();
+                conn.Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
         public class Cliente
         {
             public int Id { get; set; }
