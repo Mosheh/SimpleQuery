@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sap.Data.Hana;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -14,7 +13,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaUpdateModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var cliente = new Cliente() { Nome = "Miranda" };
@@ -34,7 +34,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaUpdateContractModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var contract = TestData.GetContract();
@@ -54,7 +55,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaInsertModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var cliente = new Cliente() { Nome = "Miranda" };
@@ -69,7 +71,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaInsertContractModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var contract = TestData.GetContract();
@@ -84,7 +87,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaInsertModelFillIdModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var cliente = new Cliente() { Nome = "Miranda" };
@@ -99,7 +103,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaInsertContractModelFillId()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var contract = TestData.GetContract();
@@ -114,7 +119,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaSelectModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var cliente = new Cliente() { Nome = "Miranda" };
@@ -131,9 +137,30 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void SapHanaSelectModelWithNullableField()
+        {
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
+            var scriptBuilder = conn.GetScriptBuild();
+
+            var undertaking = new Undertaking { Name = "TRUMP TOWER", Avaiable = null };
+
+            var createTableScript = scriptBuilder.GetCreateTableCommand<Undertaking>();
+            conn.Execute(createTableScript);
+            var id = conn.InsertRereturnId<Undertaking>(undertaking);
+
+            var undertakings= conn.Select<Undertaking>(c=> c.Id == 1);
+
+            Assert.AreEqual(1, undertakings.Count());
+            Assert.AreEqual("TRUMP TOWER", undertakings.ToList()[0].Name);
+            conn.Execute("drop table \"Undertaking\"");
+        }
+
+        [TestMethod]
         public void SapHanaSelectContractModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var contract = TestData.GetContract();
@@ -152,7 +179,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaSelectContractWhereName()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var contract = TestData.GetContract();
@@ -171,7 +199,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void SapHanaDeleteModel()
         {
-            var conn = new HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var conn = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             var scriptBuilder = conn.GetScriptBuild();
 
             var cliente = new Cliente() { Nome = "Miranda" };

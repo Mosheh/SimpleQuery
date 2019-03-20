@@ -193,8 +193,15 @@ namespace SimpleQuery.Tests
     public class Cliente
     {
         public int Id { get; set; }
-        public string Nome { get; set; }
+        public string Nome { get; set; }        
         public Endereco Endereco { get; set; }
+    }
+
+    public class Undertaking
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool? Avaiable { get; set; }
     }
 
     [Table("Invoices")]

@@ -30,7 +30,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void TestInsertOperationWithAttributeTableHana()
         {
-            var hanaConnection = new Sap.Data.Hana.HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var hanaConnection = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            hanaConnection .ConnectionString =  ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             hanaConnection.Open();
             var trans = hanaConnection.BeginTransaction();
             using (var conn = hanaConnection)
@@ -146,7 +147,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void TestInsertOperationHana()
         {
-            var hanaConnection = new Sap.Data.Hana.HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var hanaConnection = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            hanaConnection.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             hanaConnection.Open();
             var trans = hanaConnection.BeginTransaction();
             using (var conn = hanaConnection)
@@ -169,7 +171,8 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void TestSelectOperationHana()
         {
-            var hanaConnection = new Sap.Data.Hana.HanaConnection(ConfigurationManager.ConnectionStrings["hana"].ConnectionString);
+            var hanaConnection = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            hanaConnection.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             hanaConnection.Open();
             var trans = hanaConnection.BeginTransaction();
             using (var conn = hanaConnection)
