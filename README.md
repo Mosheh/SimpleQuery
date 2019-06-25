@@ -18,7 +18,7 @@ Execute insert, update, delete, select returing strongly typed List
      
     var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);    
     var cliente = new Cliente() { Nome = "Miranda" };        
-    var id = conn.InsertRereturnId<Cliente>(cliente);              
+    var id = conn.InsertReturningId<Cliente>(cliente);              
 ```
 Example usage select (GetAll):
 ```csharp
