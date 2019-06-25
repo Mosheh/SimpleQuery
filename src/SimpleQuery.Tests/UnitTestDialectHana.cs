@@ -43,7 +43,7 @@ namespace SimpleQuery.Tests
                 var createTableScript = builder.GetCreateTableCommand<UserSystem>();
                 builder.Execute(createTableScript, conn);
 
-                var lastId = conn.InsertRereturnId<UserSystem>(user);
+                var lastId = conn.InsertReturningId<UserSystem>(user);
                 Assert.AreEqual(1, lastId);
 
                 trans.Rollback();
@@ -160,7 +160,7 @@ namespace SimpleQuery.Tests
                 var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn);
 
-                var lastId = conn.InsertRereturnId<Cliente>(cliente);
+                var lastId = conn.InsertReturningId<Cliente>(cliente);
                 Assert.AreEqual(1, lastId);
 
                 trans.Rollback();

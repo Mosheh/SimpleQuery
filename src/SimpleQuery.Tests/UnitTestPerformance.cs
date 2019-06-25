@@ -53,7 +53,7 @@ namespace SimpleQuery.Tests
             for (int i = 0; i < 1000; i++)
             {
                 var cliente = new Cliente { Nome = $"Cliente {i}" };
-                conn.InsertRereturnId(cliente);
+                conn.InsertReturningId(cliente);
             }
             var dateTimeAfter = DateTime.Now;
 

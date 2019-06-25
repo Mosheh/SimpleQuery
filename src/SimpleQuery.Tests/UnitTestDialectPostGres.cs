@@ -99,7 +99,7 @@ namespace SimpleQuery.Tests
                 var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn, trans);
 
-                var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
+                var lastId = conn.InsertReturningId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
 
                 conn.Execute("drop table \"Cliente\"");
@@ -123,7 +123,7 @@ namespace SimpleQuery.Tests
                 var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn, trans);
 
-                var lastId = conn.InsertRereturnId<Cliente>(cliente, trans);
+                var lastId = conn.InsertReturningId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
 
                 cliente.Id = lastId;

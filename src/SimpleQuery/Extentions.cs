@@ -23,7 +23,7 @@ namespace SimpleQuery
         /// <param name="model">Instance model</param>
         /// <param name="dbTransaction">Transaction database</param>
         /// <returns></returns>
-        public static int InsertRereturnId<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
+        public static int InsertReturningId<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
             where T : class, new()
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
