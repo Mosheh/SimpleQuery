@@ -278,6 +278,7 @@ namespace SimpleQuery
 
             return listModel;
         }
+
         /// <summary>
         /// Get all records from database in typed model
         /// </summary>
