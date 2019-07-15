@@ -392,7 +392,7 @@ namespace SimpleQuery
             else if (name.ToLower().Contains("system.data.sqlite"))
                 return new ScriptSqliteBuilder();
             else
-                return new ScriptSqlServerBuilder();
+                return new ScriptAnsiBuilder();
         }
     }
 }

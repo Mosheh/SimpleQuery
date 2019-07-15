@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Data\Dialects\DataFormatter.cs" />
     <Compile Include="Data\Dialects\DbSimpleParameter.cs" />
+    <Compile Include="Data\Dialects\ScriptAnsiBuilder.cs" />
     <Compile Include="Data\Dialects\ScriptCommon.cs" />
     <Compile Include="Data\Dialects\ScriptHanaBuilder.cs" />
     <Compile Include="Data\Dialects\ScriptMySqlBuilder.cs" />

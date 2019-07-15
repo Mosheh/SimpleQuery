@@ -14,6 +14,8 @@ namespace SimpleQuery.Domain.Data
         PostGres,
         MySql,
         Oracle,
-        FbAdapter
+        FbAdapter,
+        MaxDb,
+        Ansi
     }
 }

@@ -51,6 +51,9 @@
     <Reference Include="Google.Protobuf, Version=3.6.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.6.1\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
+    <Reference Include="MaxDB.Data.Net20">
+      <HintPath>..\lib\MaxDB.Data.Net20.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.1.4.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
@@ -114,6 +117,7 @@
     <Compile Include="UnitTestDialectPostGres.cs" />
     <Compile Include="UnitTestDialectSQLServer.cs" />
     <Compile Include="UnitTestExtentionsPostGres.cs" />
+    <Compile Include="UnitTestMaxDbAnsi.cs" />
     <Compile Include="UnitTestPerformance.cs" />
   </ItemGroup>
   <ItemGroup>
