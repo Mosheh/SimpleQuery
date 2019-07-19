@@ -55,7 +55,7 @@ namespace SimpleQuery
         /// <param name="model">Instance model</param>
         /// <param name="dbTransaction">Transaction database</param>
         /// <returns></returns>
-        public static T Insert<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
+        public static T Insert<T>(this IDbConnection dbConnection, T model,bool includeKey=false , IDbTransaction dbTransaction = null)
            where T : class, new()
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
@@ -64,7 +64,7 @@ namespace SimpleQuery
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
 
-            var command = GetCommandInsert<T>(dbConnection, model, dbTransaction, scripBuilder);
+            var command = GetCommandInsert<T>(dbConnection, model, dbTransaction, scripBuilder, includeKey);
 
             var rowsCount = command.ExecuteNonQuery();
             Console.WriteLine($"{rowsCount} affected rows");
@@ -81,7 +81,7 @@ namespace SimpleQuery
             return model;
         }
 
-        private static IDbCommand GetCommandInsert<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder) where T : class, new()
+        private static IDbCommand GetCommandInsert<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder, bool includeKey = false) where T : class, new()
         {
             var command = dbConnection.CreateCommand();
 
@@ -107,7 +107,7 @@ namespace SimpleQuery
             }
             else
             {
-                var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
+                var insertCommand = scripBuilder.GetInsertCommand<T>(model, includeKey);
 
                 if (dbTransaction != null) command.Transaction = dbTransaction;
 

@@ -118,10 +118,10 @@ namespace SimpleQuery.Tests
                 var createTableScript = builder.GetCreateTableCommand<Cliente>();
                 builder.Execute(createTableScript, conn, trans);
 
-                var lastId = conn.InsertReturningId<Cliente>(cliente, trans);
-                Assert.AreEqual(1, lastId);
-
-                cliente.Id = lastId;
+                conn.Insert<Cliente>(cliente,true, trans);
+                cliente.Nome = "Paul";
+                conn.Update(cliente);
+                
                 cliente.Nome = "John Lennon";
                 conn.Execute("drop table \"Cliente\"");
                 //conn.Execute("drop sequence \"sequence_cliente_id\"");
@@ -145,8 +145,8 @@ namespace SimpleQuery.Tests
 
                     var createTableScript = builder.GetCreateTableCommand<Cliente>();
 
-                    var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
-                    var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
+                    var insertScript1 = builder.GetInsertCommand<Cliente>(cliente, true);
+                    var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2, true);
 
                     builder.Execute(createTableScript, conn);
                     builder.Execute(insertScript1, conn);
@@ -169,11 +169,8 @@ namespace SimpleQuery.Tests
 
             var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
 
-            var createTableScript = builder.GetCreateTableCommand<Cliente>();
-            var resultadoEsperado =
-                $"create table \"Cliente\" (\"Id\" int, \"Nome\" varchar(255), \"Ativo\" int, \"TotalPedidos\" int null, \"ValorTotalNotasFiscais\" numeric(18,6), \"Credito\" numeric(18,6), \"UltimoValorDeCompra\" numeric(18,6))";
-
-            Assert.AreEqual(resultadoEsperado, createTableScript);
+            var createTableScript = builder.GetCreateTableCommand<Cliente>();            
+            
         }
 
         public class Cliente

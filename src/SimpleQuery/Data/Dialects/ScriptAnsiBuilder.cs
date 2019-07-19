@@ -63,7 +63,7 @@ namespace SimpleQuery.Data.Dialects
             foreach (var item in allProperties)
             {
                 if (keyProperty == item)
-                    strBuilderSql.Append($"\"{item.Name}\" {GetTypeAnsi(item)}");
+                    strBuilderSql.Append($"\"{item.Name}\" {GetTypeAnsi(item)}, primary key (\"{item.Name}\")");
                 else
                     strBuilderSql.Append($"\"{item.Name}\" {GetTypeAnsi(item)}");
 
@@ -143,19 +143,7 @@ namespace SimpleQuery.Data.Dialects
             var entityName = GetEntityName<T>();
             var propertyKey = GetKeyProperty(model.GetType().GetProperties());
 
-            string scriptSelectCurrentValueId = $"SELECT currval('{GetSequenceName(entityName, propertyKey.Name)}');";
-            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
-            if (readerId.Read())
-            {
-
-                var id = readerId.GetInt32(0);
-                readerId.Close();
-                return id;
-            }
-            else
-            {
-                throw new Exception($"Could not get geranted Id in PostGres sequence for table {entityName}");
-            }
+            return 0;
 
         }
 
