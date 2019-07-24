@@ -113,12 +113,19 @@ namespace SimpleQuery.Data.Dialects
             var reader = ExecuteReader("SELECT SCOPE_IDENTITY()", dbConnection, transaction);
             if (reader.Read())
             {
+                var entityKey = GetKeyProperty(model.GetType().GetProperties().ToList());
+                if (entityKey == null)
+                {
+                    reader.Close();
+                    return null;
+                }
                 var expandoObject = new ExpandoObject() as IDictionary<string, object>;
-
+                object value = null;
                 for (var i = 0; i < reader.FieldCount; i++)
                     expandoObject.Add(reader.GetName(i), reader[i]);
 
-                var value = reader.GetDecimal(0);
+                value = reader.GetDecimal(0);
+
                 reader.Close();
                 return value;
             }
@@ -248,7 +255,7 @@ namespace SimpleQuery.Data.Dialects
             return GetLastId<T>(model, dbConnection, transaction);
         }
 
-        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T: class, new()
+        public string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T : class, new()
         {
             return ExpressionQueryTranslator.GetWhereCommand<T>(expression, this.DbServerType);
         }
@@ -299,7 +306,7 @@ namespace SimpleQuery.Data.Dialects
             }
 
             var sql = strBuilderSql.ToString();
-            return new Tuple<string, IEnumerable<DbSimpleParameter>> (sql, parameters);
+            return new Tuple<string, IEnumerable<DbSimpleParameter>>(sql, parameters);
         }
 
         public string GetUpdateCommandParameters<T>(T obj) where T : class, new()

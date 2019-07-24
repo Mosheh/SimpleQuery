@@ -7,6 +7,7 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
+using static SimpleQuery.Tests.UnitTestDialectSqlite;
 
 namespace SimpleQuery.Tests
 {
@@ -169,6 +170,29 @@ namespace SimpleQuery.Tests
 
                 var lastId = conn.InsertReturningId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
+
+                trans.Rollback();
+            }
+        }
+
+        [TestMethod]
+        public void TestInsertOperationSqlServerNoEntityKey()
+        {
+            var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
+            connection.Open();
+
+            var trans = connection.BeginTransaction();
+            using (var conn = connection)
+            {
+                IScriptBuilder builder = new ScriptSqlServerBuilder();
+
+                var conta = new ContaContabil() {  Chave = "1.1", Name= "Ativo imobilizado" };
+
+                var createTableScript = builder.GetCreateTableCommand<ContaContabil>();
+                builder.Execute(createTableScript, conn, trans);
+
+                conn.Insert<ContaContabil>(conta, false, trans);
+                Assert.AreEqual("1.1", conta.Chave);
 
                 trans.Rollback();
             }

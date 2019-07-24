@@ -138,6 +138,37 @@ namespace SimpleQuery.Tests
                 GC.WaitForPendingFinalizers();
             }
         }
+
+        [TestCategory("CRUD")]
+        [TestMethod]
+        public void TestInsertOperationNoPrimaryKeySqlite()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            connection.Open();
+            using (var trans = new TransactionScope())
+            {
+                using (var conn = connection)
+                {
+                    IScriptBuilder builder = new ScriptSqliteBuilder();
+
+                    var conta = new ContaContabil() { Chave = "1.1", Name = "Ativo" };
+
+                    var createTableScript = builder.GetCreateTableCommand<ContaContabil>();
+                    builder.Execute(createTableScript, conn);
+
+                    var lastId = conn.Insert<ContaContabil>(conta);
+                    Assert.AreEqual("1.1", conta.Chave);
+
+                    conn.ReleaseMemory();
+
+                    conn.Close();
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+            }
+        }
+
         [TestCategory("CRUD")]
         [TestMethod]
         public void TestDeleteOperation()
@@ -541,6 +572,11 @@ namespace SimpleQuery.Tests
             }
         }
 
+        public class ContaContabil
+        {
+            public string Chave { get; set; }
+            public string Name { get; set; }
+        }
         public class Cliente
         {
             public int Id { get; set; }
