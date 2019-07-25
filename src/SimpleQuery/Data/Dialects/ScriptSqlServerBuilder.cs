@@ -80,7 +80,7 @@ namespace SimpleQuery.Data.Dialects
             var strBuilderSql = new StringBuilder($"insert into [{entityName}] (");
             foreach (var item in allProperties)
             {
-                if (keyName == item && !includeKey)
+                if (keyName == item && !includeKey && IsIdentity(item))
                     continue;
 
                 strBuilderSql.Append($"[{item.Name}]");
@@ -93,7 +93,7 @@ namespace SimpleQuery.Data.Dialects
 
             foreach (var item in allProperties)
             {
-                if (keyName == item && !includeKey)
+                if (keyName == item && !includeKey && IsIdentity(item))
                     continue;
 
                 strBuilderSql.Append($"{DataFormatter.GetValue(item, obj, this.DbServerType)}");
@@ -110,11 +110,12 @@ namespace SimpleQuery.Data.Dialects
 
         public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
+
             var reader = ExecuteReader("SELECT SCOPE_IDENTITY()", dbConnection, transaction);
             if (reader.Read())
             {
                 var entityKey = GetKeyProperty(model.GetType().GetProperties().ToList());
-                if (entityKey == null)
+                if (entityKey == null || !IsIdentity(entityKey))
                 {
                     reader.Close();
                     return null;
@@ -123,6 +124,7 @@ namespace SimpleQuery.Data.Dialects
                 object value = null;
                 for (var i = 0; i < reader.FieldCount; i++)
                     expandoObject.Add(reader.GetName(i), reader[i]);
+
 
                 value = reader.GetDecimal(0);
 
@@ -193,17 +195,24 @@ namespace SimpleQuery.Data.Dialects
             foreach (var item in allProperties)
             {
                 if (keyProperty == item)
-                    strBuilderSql.Append($"[{item.Name}] {GetTypeSqlServer(item)} identity");
+                {
+                    bool hasIdentity = IsIdentity(keyProperty);
+                    if (hasIdentity)
+                        strBuilderSql.Append($"[{item.Name}] {GetTypeSqlServer(item)} identity");
+                    else
+                        strBuilderSql.Append($"[{item.Name}] {GetTypeSqlServer(item)}");
+                }
                 else
+                {
                     strBuilderSql.Append($"[{item.Name}] {GetTypeSqlServer(item)}");
-
+                }
                 if (item != allProperties.Last())
                 {
                     strBuilderSql.Append(", ");
                 }
                 else
                 {
-                    if (keyProperty != null && keyProperty.PropertyType.Name.Equals("Int32"))
+                    if (keyProperty != null)
                         strBuilderSql.Append($", primary key ([{keyProperty.Name}])");
                     strBuilderSql.Append(")");
                 }
@@ -212,6 +221,12 @@ namespace SimpleQuery.Data.Dialects
 
             var sql = strBuilderSql.ToString();
             return sql;
+        }
+
+        private bool IsIdentity(PropertyInfo keyProperty)
+        {
+            var integerTypeNames = new String[] { "Int32", "Int64" };
+            return integerTypeNames.Contains(keyProperty.PropertyType.Name);
         }
 
         private string GetTypeSqlServer(PropertyInfo item)

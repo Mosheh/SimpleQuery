@@ -55,7 +55,7 @@ namespace SimpleQuery
         /// <param name="model">Instance model</param>
         /// <param name="dbTransaction">Transaction database</param>
         /// <returns></returns>
-        public static T Insert<T>(this IDbConnection dbConnection, T model,bool includeKey=false , IDbTransaction dbTransaction = null)
+        public static T Insert<T>(this IDbConnection dbConnection, T model, bool includeKey = false, IDbTransaction dbTransaction = null)
            where T : class, new()
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
@@ -76,7 +76,8 @@ namespace SimpleQuery
             if (keyProperty != null)
             {
                 var convertedValue = Convert.ChangeType(lastId, keyProperty.PropertyType);
-                keyProperty.SetValue(model, convertedValue);
+                if (convertedValue != null)
+                    keyProperty.SetValue(model, convertedValue);
             }
             return model;
         }
@@ -158,7 +159,7 @@ namespace SimpleQuery
                     param.DbType = item.DbType;
                     param.Value = item.Value;
                     param.Size = item.Size;
-                    
+
                     command.Parameters.Add(param);
                 }
                 if (dbTransaction != null) command.Transaction = dbTransaction;
@@ -217,7 +218,7 @@ namespace SimpleQuery
         /// <param name="dbConnection">Connection</param>
         /// <param name="commandText">sql text command</param>
         /// <returns></returns>
-        public static int Execute(this IDbConnection dbConnection, string commandText, IDbTransaction transaction=null)
+        public static int Execute(this IDbConnection dbConnection, string commandText, IDbTransaction transaction = null)
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 

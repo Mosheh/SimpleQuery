@@ -321,6 +321,29 @@ namespace SimpleQuery.Tests
             Assert.AreEqual(resultadoEsperado, createTableScript);
         }
 
+
+        [TestMethod]
+        public void TestInsertOperationWithStringKeySqlServer()
+        {
+            var cliente = new Carrier();
+
+            using (var tran = new TransactionScope())
+            {
+                using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString))
+                {
+                    var createTableScript = conn.GetScriptBuild().GetCreateTableCommand<Carrier>();
+                    conn.Execute(createTableScript);
+
+                    conn.Insert<Carrier>(cliente);
+
+                    conn.Execute("Drop table Carrier");
+
+                }
+
+                tran.Complete();
+            }
+        }
+
         public class Doc
         {
             public int Id { get; set; }
@@ -346,6 +369,17 @@ namespace SimpleQuery.Tests
         {
 
         }
+    }
+
+    public class Carrier
+    {
+        public Carrier()
+        {
+            this.Id = Guid.NewGuid().ToString();
+            this.Name = "Teste";
+        }
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 
     public class User
