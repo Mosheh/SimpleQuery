@@ -186,7 +186,7 @@ namespace SimpleQuery.Tests
             {
                 IScriptBuilder builder = new ScriptSqlServerBuilder();
 
-                var conta = new ContaContabil() {  Chave = "1.1", Name= "Ativo imobilizado" };
+                var conta = new ContaContabil() { Chave = "1.1", Name = "Ativo imobilizado" };
 
                 var createTableScript = builder.GetCreateTableCommand<ContaContabil>();
                 builder.Execute(createTableScript, conn, trans);
@@ -204,7 +204,7 @@ namespace SimpleQuery.Tests
             var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString);
             connection.Open();
 
-           
+
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString))
             {
                 conn.Open();
@@ -218,11 +218,11 @@ namespace SimpleQuery.Tests
 
                 var lastId = conn.InsertReturningId<Doc>(doc, trans);
                 Assert.AreEqual(1, lastId);
-                
+
                 trans.Rollback();
 
             }
-            
+
 
         }
 
@@ -246,7 +246,7 @@ namespace SimpleQuery.Tests
                 doc.Value = 2000;
                 connection.Update<Doc>(doc);
                 var docFromDatabase = connection.Select<Doc>(c => c.Id == 1).FirstOrDefault();
-                
+
                 Assert.AreEqual(2000, docFromDatabase.Value);
                 connection.Execute("drop table [Doc]");
                 transaction.Complete();
@@ -325,7 +325,7 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void TestInsertOperationWithStringKeySqlServer()
         {
-            var cliente = new Carrier();
+            var carrier = new Carrier();
 
             using (var tran = new TransactionScope())
             {
@@ -334,7 +334,32 @@ namespace SimpleQuery.Tests
                     var createTableScript = conn.GetScriptBuild().GetCreateTableCommand<Carrier>();
                     conn.Execute(createTableScript);
 
-                    conn.Insert<Carrier>(cliente);
+                    conn.Insert<Carrier>(carrier);
+
+                    conn.Execute("Drop table Carrier");
+
+                }
+
+                tran.Complete();
+            }
+        }
+
+        [TestMethod]
+        public void TestSelectWithSelectExentions()
+        {
+            var carrier = new Carrier();
+            var createDate = new DateTime(2019, 07, 19);
+            var updateDate = new DateTime(2019, 07, 25);
+            using (var tran = new TransactionScope())
+            {
+                using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString))
+                {
+                    var createTableScript = conn.GetScriptBuild().GetCreateTableCommand<Carrier>();
+                    conn.Execute(createTableScript);
+
+                    conn.Insert<Carrier>(carrier);
+
+                    var result = conn.Select<Carrier>(c => c.CreateDate > createDate && c.UpdateDate <= updateDate && c.Name == "Teste");
 
                     conn.Execute("Drop table Carrier");
 
@@ -377,9 +402,13 @@ namespace SimpleQuery.Tests
         {
             this.Id = Guid.NewGuid().ToString();
             this.Name = "Teste";
+            this.CreateDate = new DateTime(2019, 07 , 20);
+            this.UpdateDate = new DateTime(2019, 07, 25);
         }
         public string Id { get; set; }
         public string Name { get; set; }
+        public DateTime CreateDate { get; set; }
+        public DateTime UpdateDate { get; set; }
     }
 
     public class User

@@ -329,6 +329,13 @@ namespace SimpleQuery.Data.Linq
                     sb.Append(value);
                 else if (prop.FieldType.Name == "String")
                     sb.Append($"'{value}'");
+                else if (prop.FieldType.Name == "DateTime")
+                {
+                    if (value == null)
+                        sb.Append($"null");
+                    else
+                        sb.Append($"'{Convert.ToDateTime(value).ToString("yyyy-MM-dd HH:mm:ss")}'");
+                }
                 else
                     sb.Append(value);
 
