@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SQLite;
 using System.Drawing;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -129,6 +130,41 @@ namespace SimpleQuery.Tests
 
                 var lastId = conn.InsertReturningId<Cliente>(cliente, trans);
                 Assert.AreEqual(1, lastId);
+                trans.Rollback();
+                conn.ReleaseMemory();
+
+                conn.Close();
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        [TestCategory("CRUD")]
+        [TestMethod]
+        public void TestInsertAndSelectWithDynamicObject()
+        {
+            var connection = new SQLiteConnection($"Data Source={GetFileNameDb()}");
+            connection.Open();
+
+            var trans = connection.BeginTransaction();
+            using (var conn = connection)
+            {
+                IScriptBuilder builder = new ScriptSqliteBuilder();
+
+                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
+                builder.Execute(createTableScript, conn, trans);
+
+                conn.Insert<Cliente>(cliente,false, trans);
+
+                var selectResult = conn.Query<dynamic>("select * from cliente");
+
+                var dynamicTable = selectResult.First() as dynamic;
+
+                Assert.AreEqual(1, dynamicTable.Id);
+
                 trans.Rollback();
                 conn.ReleaseMemory();
 

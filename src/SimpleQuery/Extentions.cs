@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -323,20 +324,38 @@ namespace SimpleQuery
         private static T GetModelByDataRow<T>(DataRow row) where T : class, new()
         {
             var model = new T();
-            var properties = model.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
-            foreach (var item in properties)
+            if (model is dynamic)
+                if (!(model is ExpandoObject))
+                    throw new Exception("the dynamic type is not allowed, use ExpandoObject ");
+
+            if (model is dynamic || model is ExpandoObject)
             {
-                if (row.Table.Columns.Cast<DataColumn>().Any(c => c.ColumnName == item.Name))
+                foreach (DataColumn column in row.Table.Columns)
                 {
-                    var rowValue = row[item.Name];
-                    var value = ChangeType(rowValue, item.PropertyType);
-
-                    item.SetValue(model, row[item.Name] == DBNull.Value ? null : value);
+                    (model as IDictionary<string, object>).Add(column.ColumnName, row[column]);
                 }
-            }
 
-            return model;
+                return model;
+            }
+            else
+            {
+
+                var properties = model.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+                foreach (var item in properties)
+                {
+                    if (row.Table.Columns.Cast<DataColumn>().Any(c => c.ColumnName == item.Name))
+                    {
+                        var rowValue = row[item.Name];
+                        var value = ChangeType(rowValue, item.PropertyType);
+
+                        item.SetValue(model, row[item.Name] == DBNull.Value ? null : value);
+                    }
+                }
+
+                return model;
+            }
         }
         /// <summary>
         /// Convert a type object to another
