@@ -110,7 +110,11 @@ namespace SimpleQuery.Data.Dialects
         {
             var entityName = GetEntityName<T>();
             var propertyKey = GetKeyProperty(model.GetType().GetProperties());
-            var scriptColumnId = $"select \"COLUMN_ID\" from table_columns where table_name = '{entityName}' and column_name='{propertyKey.Name}'";
+            var schemaNameReader = ExecuteReader("select current_schema from DUMMY", dbConnection);
+            schemaNameReader.Read();
+            var schemaName = schemaNameReader.GetString(0); schemaNameReader.Close();
+
+            var scriptColumnId = $"select \"COLUMN_ID\" from table_columns where schema_name='{schemaName}' and table_name = '{entityName}' and column_name='{propertyKey.Name}'";
             var readerColumnId = ExecuteReader(scriptColumnId, dbConnection);
             var columnId = readerColumnId.Read() ? readerColumnId.GetInt32(0) : throw new Exception("Could not get column id in Hana schema");
 
@@ -130,7 +134,7 @@ namespace SimpleQuery.Data.Dialects
             {
                 throw new Exception($"Could not get geranted Id in Hana sequence for table {entityName}");
             }
-        }
+        }      
 
         public string GetSelectCommand<T>(T obj) where T : class, new()
         {
