@@ -325,37 +325,21 @@ namespace SimpleQuery
         {
             var model = new T();
 
-            if (model is dynamic)
-                if (!(model is ExpandoObject))
-                    throw new Exception("the dynamic type is not allowed, use ExpandoObject ");
+            var properties = model.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
-            if (model is dynamic || model is ExpandoObject)
+            foreach (var item in properties)
             {
-                foreach (DataColumn column in row.Table.Columns)
+                if (row.Table.Columns.Cast<DataColumn>().Any(c => c.ColumnName == item.Name))
                 {
-                    (model as IDictionary<string, object>).Add(column.ColumnName, row[column]);
+                    var rowValue = row[item.Name];
+                    var value = ChangeType(rowValue, item.PropertyType);
+
+                    item.SetValue(model, row[item.Name] == DBNull.Value ? null : value);
                 }
-
-                return model;
             }
-            else
-            {
 
-                var properties = model.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            return model;
 
-                foreach (var item in properties)
-                {
-                    if (row.Table.Columns.Cast<DataColumn>().Any(c => c.ColumnName == item.Name))
-                    {
-                        var rowValue = row[item.Name];
-                        var value = ChangeType(rowValue, item.PropertyType);
-
-                        item.SetValue(model, row[item.Name] == DBNull.Value ? null : value);
-                    }
-                }
-
-                return model;
-            }
         }
         /// <summary>
         /// Convert a type object to another
