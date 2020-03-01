@@ -25,8 +25,6 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Open();
 
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
             var instanceModel = new T();
 
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
@@ -64,14 +62,10 @@ namespace SimpleQuery
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 
             if (wasClosed) dbConnection.Open();
-
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
-            var instanceModel = new T();
-
+            
             var command = dbConnection.CreateCommand();
             command.CommandText = sqlCommandText;
-            var reader = command.ExecuteReader();
+            var reader = ExecuteReader(command);
             var listModel = new List<T>();
 
             var dataTable = new DataTable();
@@ -102,11 +96,7 @@ namespace SimpleQuery
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 
             if (wasClosed) dbConnection.Open();
-
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
-            var instanceModel = new T();
-
+            
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
             var reader = scripBuilder.ExecuteReader(commandText, dbConnection);
             var listModel = new List<T>();

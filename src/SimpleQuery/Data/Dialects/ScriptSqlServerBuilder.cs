@@ -1,17 +1,13 @@
 ﻿using SimpleQuery.Data.Linq;
-using SimpleQuery.Domain.Data;
 using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Dynamic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleQuery.Data.Dialects
 {
@@ -30,7 +26,7 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var reader = command.ExecuteReader();
+            var reader = Extentions.ExecuteReader(command);
 
             if (wasClosed) dbConnection.Close();
 
@@ -46,8 +42,7 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var rowsCount = command.ExecuteNonQuery();
-            var dataTable = new DataTable();
+            var rowsCount = Extentions.ExecuteNonQuery(command);
             Console.WriteLine($"{rowsCount} affected rows");
             if (wasClosed) dbConnection.Close();
         }
@@ -131,11 +126,9 @@ namespace SimpleQuery.Data.Dialects
                 reader.Close();
                 return value;
             }
-            else
-            {
-                reader.Close();
-                return 0;
-            }
+
+            reader.Close();
+            return 0;
         }
 
         public string GetSelectCommand<T>(T obj) where T : class, new()

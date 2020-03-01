@@ -3,21 +3,17 @@ using SimpleQuery.Domain.Data;
 using SimpleQuery.Domain.Data.Dialects;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
-using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
 
 namespace SimpleQuery.Data.Dialects
 {
     public class ScriptHanaBuilder : ScriptCommon, IScriptBuilder
     {
-        public Domain.Data.DbServerType DbServerType => Domain.Data.DbServerType.Hana;
+        public DbServerType DbServerType => DbServerType.Hana;
 
         public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction=null)
         {
@@ -28,7 +24,7 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var reader = command.ExecuteReader();
+            var reader = Extentions.ExecuteReader(command);
 
             if (wasClosed) dbConnection.Close();
 
@@ -44,8 +40,8 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var rowsCount = command.ExecuteNonQuery();
-            var dataTable = new DataTable();
+            var rowsCount = Extentions.ExecuteNonQuery(command);
+
             Console.WriteLine($"{rowsCount} affected rows");
             if (wasClosed) dbConnection.Close();
         }
@@ -248,17 +244,15 @@ namespace SimpleQuery.Data.Dialects
         {
             if (string.IsNullOrEmpty(sequenceName))
             {
-                return GetLastId<T>(model, dbConnection, transaction); }
-            else
-            {
-                string scriptSelectCurrentValueId = "select \"" + sequenceName + "\".currval as \"ValueField\"from \"DUMMY\"";
-                var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
-                if (readerId.Read())
-                    return readerId.GetInt32(0);
-                else
-                    throw new Exception($"Could not get geranted Id in Hana sequence for table {model.GetType().Name}");
+                return GetLastId<T>(model, dbConnection, transaction);
             }
 
+            string scriptSelectCurrentValueId = "select \"" + sequenceName + "\".currval as \"ValueField\"from \"DUMMY\"";
+            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
+            if (readerId.Read())
+                return readerId.GetInt32(0);
+
+            throw new Exception($"Could not get geranted Id in Hana sequence for table {model.GetType().Name}");
         }
 
         public string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T: class, new()

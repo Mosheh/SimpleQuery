@@ -15,7 +15,6 @@ namespace SimpleQuery.Data.Dialects
     {
         public DbServerType DbServerType => DbServerType.MySql;
 
-
         public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
             var command = dbConnection.CreateCommand();
@@ -25,8 +24,8 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var rowsCount = command.ExecuteNonQuery();
-            var dataTable = new DataTable();
+            var rowsCount = Extentions.ExecuteNonQuery(command);
+
             Console.WriteLine($"{rowsCount} affected rows");
             if (wasClosed) dbConnection.Close();
         }
@@ -40,7 +39,7 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var reader = command.ExecuteReader();
+            var reader = Extentions.ExecuteReader(command);
 
             if (wasClosed) dbConnection.Close();
 
@@ -49,8 +48,7 @@ namespace SimpleQuery.Data.Dialects
 
         public string GetCreateTableCommand<T>() where T : class, new()
         {
-            var model = new T();
-            var allProperties = ScriptCommon.GetValidProperty<T>();
+            var allProperties = GetValidProperty<T>();
             var entityName = GetEntityName<T>();
 
             var keyProperty = GetKeyProperty(allProperties);

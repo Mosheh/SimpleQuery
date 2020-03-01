@@ -1,21 +1,15 @@
 ﻿using SimpleQuery.Data.Dialects;
 using SimpleQuery.Domain.Data.Dialects;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Dynamic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Transactions;
 
 namespace SimpleQuery
 {
     public static partial class Extentions
     {
-        private static readonly ConcurrentDictionary<RuntimeTypeHandle, string> GetQueries = new ConcurrentDictionary<RuntimeTypeHandle, string>();
         /// <summary>
         /// Insert model and return last id
         /// </summary>
@@ -39,7 +33,7 @@ namespace SimpleQuery
             if (dbTransaction != null) command.Transaction = dbTransaction;
 
             command.CommandText = insertCommand;
-            var rowsCount = command.ExecuteNonQuery();
+            var rowsCount = ExecuteNonQuery(command);
             Console.WriteLine($"{rowsCount} affected rows");
 
             var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
@@ -67,7 +61,7 @@ namespace SimpleQuery
 
             var command = GetCommandInsert<T>(dbConnection, model, dbTransaction, scripBuilder, includeKey);
 
-            var rowsCount = command.ExecuteNonQuery();
+            var rowsCount = ExecuteNonQuery(command);
             Console.WriteLine($"{rowsCount} affected rows");
 
             var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
@@ -138,7 +132,7 @@ namespace SimpleQuery
 
             if (dbTransaction != null) command.Transaction = dbTransaction;
 
-            var rowsCount = command.ExecuteNonQuery();
+            var rowsCount = ExecuteNonQuery(command);
             Console.WriteLine($"{rowsCount} affected rows");
 
             if (wasClosed) dbConnection.Close();
@@ -206,7 +200,7 @@ namespace SimpleQuery
             if (dbTransaction != null) command.Transaction = dbTransaction;
 
             command.CommandText = deleteCommandText;
-            var rowsCount = command.ExecuteNonQuery();
+            var rowsCount = ExecuteNonQuery(command);
             Console.WriteLine($"{rowsCount} affected rows");
 
             if (wasClosed) dbConnection.Close();
@@ -225,11 +219,9 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Open();
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-
             var command = dbConnection.CreateCommand(); if (transaction != null) command.Transaction = transaction;
             command.CommandText = commandText;
-            var rowsCount = command.ExecuteNonQuery();
+            var rowsCount = ExecuteNonQuery(command);
 
             Console.WriteLine($"{rowsCount} affected rows");
 
@@ -249,8 +241,6 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Open();
 
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
 
             IScriptBuilder scriptBuilder = GetScriptBuild(dbConnection);
             var selectScript = scriptBuilder.GetSelectCommand<T>(new T());
@@ -295,10 +285,7 @@ namespace SimpleQuery
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 
             if (wasClosed) dbConnection.Open();
-
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
-
+            
             IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
             var selectScript = scripBuilder.GetSelectCommand<T>(model);
 
@@ -371,8 +358,8 @@ namespace SimpleQuery
                     conversion.AssemblyQualifiedName.Contains("System.String") ||
                     conversion.AssemblyQualifiedName.Contains("System.Byte[]"))
                     return null;
-                else
-                    throw new Exception("Type value is not mapped");
+
+                throw new Exception("Type value is not mapped");
             }
             return Convert.ChangeType(value, t);
         }
@@ -387,16 +374,37 @@ namespace SimpleQuery
             var name = dbConnection.GetType().Namespace;
             if (name.ToLower().Contains("system.data.sqlclient"))
                 return new ScriptSqlServerBuilder();
-            else if (name.ToLower().Contains("hana"))
+            if (name.ToLower().Contains("hana"))
                 return new ScriptHanaBuilder();
-            else if (name.ToLower().Contains("npgsql"))
+            if (name.ToLower().Contains("npgsql"))
                 return new ScriptPostGresBuilder();
-            else if (name.ToLower().Contains("mysqlclient"))
+            if (name.ToLower().Contains("mysqlclient"))
                 return new ScriptMySqlBuilder();
-            else if (name.ToLower().Contains("system.data.sqlite"))
+            if (name.ToLower().Contains("system.data.sqlite"))
                 return new ScriptSqliteBuilder();
-            else
-                return new ScriptAnsiBuilder();
+
+            return new ScriptAnsiBuilder();
+        }
+
+        public static int ExecuteNonQuery(IDbCommand dbCommand)
+        {
+            var name = dbCommand.GetType().Namespace;
+
+            return name != null && name.ToLower().Contains("hana") ? new CommandHana().ExecuteNonQuery(dbCommand) : dbCommand.ExecuteNonQuery();
+        }
+
+        public static IDataReader ExecuteReader(IDbCommand dbCommand)
+        {
+            var name = dbCommand.GetType().Namespace;
+
+            return name != null && name.ToLower().Contains("hana") ? new CommandHana().ExecuteReader(dbCommand) : dbCommand.ExecuteReader();
+        }
+
+        public static object ExecuteScalar(IDbCommand dbCommand)
+        {
+            var name = dbCommand.GetType().Namespace;
+
+            return name != null && name.ToLower().Contains("hana") ? new CommandHana().ExecuteScalar(dbCommand) : dbCommand.ExecuteScalar();
         }
     }
 }

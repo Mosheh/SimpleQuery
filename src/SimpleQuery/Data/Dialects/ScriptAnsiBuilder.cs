@@ -27,8 +27,8 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var rowsCount = command.ExecuteNonQuery();
-            var dataTable = new DataTable();
+            var rowsCount = Extentions.ExecuteNonQuery(command);
+
             Console.WriteLine($"{rowsCount} affected rows");
             if (wasClosed) dbConnection.Close();
         }
@@ -42,7 +42,7 @@ namespace SimpleQuery.Data.Dialects
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
-            var reader = command.ExecuteReader();
+            var reader = Extentions.ExecuteReader(command);
 
             if (wasClosed) dbConnection.Close();
 
@@ -237,15 +237,12 @@ namespace SimpleQuery.Data.Dialects
             {
                 return GetLastId<T>(model, dbConnection, transaction);
             }
-            else
-            {
-                string scriptSelectCurrentValueId = $"SELECT currval('{sequenceName}');";
-                var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
-                if (readerId.Read())
-                    return readerId.GetInt32(0);
-                else
-                    throw new Exception($"Could not get geranted Id in PostGres sequence for table {model.GetType().Name}");
-            }
+            string scriptSelectCurrentValueId = $"SELECT currval('{sequenceName}');";
+            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
+            if (readerId.Read())
+                return readerId.GetInt32(0);
+
+            throw new Exception($"Could not get geranted Id in PostGres sequence for table {model.GetType().Name}");
         }
 
         public string GetWhereCommand<T>(Expression<Func<T, bool>> expression) where T : class, new()

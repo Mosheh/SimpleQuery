@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Dialects\CommandHana.cs" />
     <Compile Include="Data\Dialects\DataFormatter.cs" />
     <Compile Include="Data\Dialects\DbSimpleParameter.cs" />
     <Compile Include="Data\Dialects\ScriptAnsiBuilder.cs" />
