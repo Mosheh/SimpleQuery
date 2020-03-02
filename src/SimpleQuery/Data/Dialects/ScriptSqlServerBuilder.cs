@@ -23,12 +23,7 @@ namespace SimpleQuery.Data.Dialects
             if (dbTransaction != null) command.Transaction = dbTransaction;
 
             command.CommandText = commandText;
-
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
+            
             var reader = Extentions.ExecuteReader(command);
 
             return reader;
@@ -40,12 +35,7 @@ namespace SimpleQuery.Data.Dialects
             if (dbTransaction != null)
                 command.Transaction = dbTransaction;
             command.CommandText = commandText;
-
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
+            
             var rowsCount = Extentions.ExecuteNonQuery(command);
             Console.WriteLine($"{rowsCount} affected rows");
         }

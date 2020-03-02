@@ -24,12 +24,6 @@ namespace SimpleQuery.Data.Dialects
                 command.Transaction = dbTransaction;
             command.CommandText = commandText;
 
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
-
             var rowsCount = Extentions.ExecuteNonQuery(command);
 
             Console.WriteLine($"{rowsCount} affected rows");
@@ -41,12 +35,6 @@ namespace SimpleQuery.Data.Dialects
             if (transaction != null) command.Transaction = transaction;
 
             command.CommandText = commandText;
-
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
 
             var reader = Extentions.ExecuteReader(command);
             return reader;
@@ -241,7 +229,7 @@ namespace SimpleQuery.Data.Dialects
                 return GetLastId<T>(model, dbConnection, transaction);
             }
             string scriptSelectCurrentValueId = $"SELECT currval('{sequenceName}');";
-            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
+            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection, transaction);
             if (readerId.Read())
                 return readerId.GetInt32(0);
 

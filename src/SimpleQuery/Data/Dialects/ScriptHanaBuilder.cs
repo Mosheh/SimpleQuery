@@ -245,7 +245,7 @@ namespace SimpleQuery.Data.Dialects
             }
 
             string scriptSelectCurrentValueId = "select \"" + sequenceName + "\".currval as \"ValueField\"from \"DUMMY\"";
-            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
+            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection, transaction);
             if (readerId.Read())
                 return readerId.GetInt32(0);
 

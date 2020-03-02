@@ -8,7 +8,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleQuery.Data.Dialects
 {
@@ -24,12 +23,7 @@ namespace SimpleQuery.Data.Dialects
             if (dbTransaction != null)
                 command.Transaction = dbTransaction;
             command.CommandText = commandText;
-
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
+           
             var rowsCount = Extentions.ExecuteNonQuery(command);
 
             Console.WriteLine($"{rowsCount} affected rows");
@@ -41,12 +35,7 @@ namespace SimpleQuery.Data.Dialects
             if (transaction != null) command.Transaction = transaction;
 
             command.CommandText = commandText;
-
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
+            
             var reader = Extentions.ExecuteReader(command);
 
             return reader;
@@ -54,7 +43,6 @@ namespace SimpleQuery.Data.Dialects
 
         public string GetCreateTableCommand<T>() where T : class, new()
         {
-            var model = new T();
             var allProperties = GetValidProperty<T>();
             var entityName = GetEntityName<T>();
 
@@ -154,9 +142,9 @@ namespace SimpleQuery.Data.Dialects
         {
             var entityName = GetEntityName<T>();
             var propertyKey = GetKeyProperty(model.GetType().GetProperties());
-         
+
             string scriptSelectCurrentValueId = $"SELECT currval('{GetSequenceName(entityName, propertyKey.Name)}');";
-            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
+            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection, transaction);
             if (readerId.Read())
             {
 
@@ -164,11 +152,8 @@ namespace SimpleQuery.Data.Dialects
                 readerId.Close();
                 return id;
             }
-            else
-            {
-                throw new Exception($"Could not get geranted Id in PostGres sequence for table {entityName}");
-            }
-            
+
+            throw new Exception($"Could not get geranted Id in PostGres sequence for table {entityName}");
         }
 
         public string GetSelectCommand<T>(T obj) where T : class, new()
@@ -262,7 +247,7 @@ namespace SimpleQuery.Data.Dialects
                 return GetLastId<T>(model, dbConnection, transaction);
             }
             string scriptSelectCurrentValueId = $"SELECT currval('{sequenceName}');";
-            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
+            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection, transaction);
             if (readerId.Read())
                 return readerId.GetInt32(0);
 

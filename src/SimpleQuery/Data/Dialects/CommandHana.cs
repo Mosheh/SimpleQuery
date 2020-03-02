@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace SimpleQuery.Data.Dialects
 {
     /// <summary>
-    /// ExecuteNonQuery and ExecuteScalar, specifically for the Hana.
+    /// ExecuteNonQuery, ExecuteScalar and ExecuteReader, specifically for the Hana.
     /// </summary>
     public class CommandHana
     {
@@ -14,8 +14,7 @@ namespace SimpleQuery.Data.Dialects
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         [DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string className,
-            string windowTitle);
+        private static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string className, string windowTitle);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);

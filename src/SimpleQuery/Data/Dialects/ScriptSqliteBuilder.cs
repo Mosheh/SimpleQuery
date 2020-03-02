@@ -21,12 +21,7 @@ namespace SimpleQuery.Data.Dialects
             if (transaction != null)
                 command.Transaction = transaction;
             command.CommandText = commandText;
-
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
+            
             var rowsCount = Extentions.ExecuteNonQuery(command);
             Console.WriteLine($"{rowsCount} affected rows");
         }
@@ -37,12 +32,7 @@ namespace SimpleQuery.Data.Dialects
             if (transaction != null) command.Transaction = transaction;
 
             command.CommandText = commandText;
-
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed)
-            {
-                dbConnection.Open();
-            }
+            
             var reader = Extentions.ExecuteReader(command);
 
             return reader;
@@ -176,11 +166,8 @@ namespace SimpleQuery.Data.Dialects
                 reader.Close();
                 return value;
             }
-            else
-            {
-                reader.Close();
-                return 0;
-            }
+            reader.Close();
+            return 0;
         }
 
         public object GetLastId<T>(T model, IDbConnection dbConnection, IDbTransaction transaction = null, string sequenceName = null)
