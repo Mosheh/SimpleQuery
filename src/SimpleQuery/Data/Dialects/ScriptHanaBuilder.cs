@@ -17,64 +17,30 @@ namespace SimpleQuery.Data.Dialects
 
         public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
-            try
+            var command = dbConnection.CreateCommand();
+            if (dbTransaction != null)
             {
-                var command = dbConnection.CreateCommand();
-                if (dbTransaction != null) command.Transaction = dbTransaction;
-
-                command.CommandText = commandText;
-
-                var wasClosed = dbConnection.State == ConnectionState.Closed;
-                if (wasClosed)
-                {
-                    dbConnection.Open();
-                }
-                var reader = Extentions.ExecuteReader(command);
-
-                return reader;
+                command.Transaction = dbTransaction;
             }
-            catch (Exception e)
-            {
-                throw e.InnerException is null ? e : e.InnerException;
-            }
-            finally
-            {
-                if (dbTransaction is null)
-                {
-                    dbConnection.Close();
-                }
-            }
+
+            command.CommandText = commandText;
+
+            var reader = Extentions.ExecuteReader(command);
+
+            return reader;
         }
 
         public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
-            try
-            {
-                var command = dbConnection.CreateCommand();
-                if (dbTransaction != null)
-                    command.Transaction = dbTransaction;
-                command.CommandText = commandText;
+            var command = dbConnection.CreateCommand();
+            if (dbTransaction != null)
+                command.Transaction = dbTransaction;
 
-                var wasClosed = dbConnection.State == ConnectionState.Closed;
-                if (wasClosed)
-                {
-                    dbConnection.Open();
-                }
-                var rowsCount = Extentions.ExecuteNonQuery(command);
+            command.CommandText = commandText;
 
-                Console.WriteLine($"{rowsCount} affected rows");
-            }
-            catch (Exception e)
-            {
-                throw e.InnerException is null ? e : e.InnerException;
-            }
-            finally
-            {
-                if (dbTransaction is null)
-                {
-                    dbConnection.Close();
-                }
-            }
+            var rowsCount = Extentions.ExecuteNonQuery(command);
+
+            Console.WriteLine($"{rowsCount} affected rows");
         }
 
         public string GetDeleteCommand<T>(T obj, object key) where T : class, new()
@@ -137,20 +103,20 @@ namespace SimpleQuery.Data.Dialects
         {
             var entityName = GetEntityName<T>();
             var propertyKey = GetKeyProperty(model.GetType().GetProperties());
-            var schemaNameReader = ExecuteReader("select current_schema from DUMMY", dbConnection);
+            var schemaNameReader = ExecuteReader("select current_schema from DUMMY", dbConnection, transaction);
             schemaNameReader.Read();
             var schemaName = schemaNameReader.GetString(0); schemaNameReader.Close();
 
             var scriptColumnId = $"select \"COLUMN_ID\" from table_columns where schema_name='{schemaName}' and table_name = '{entityName}' and column_name='{propertyKey.Name}'";
-            var readerColumnId = ExecuteReader(scriptColumnId, dbConnection);
+            var readerColumnId = ExecuteReader(scriptColumnId, dbConnection, transaction);
             var columnId = readerColumnId.Read() ? readerColumnId.GetInt32(0) : throw new Exception("Could not get column id in Hana schema");
 
             string scriptSelectSequenceName = $"select \"SEQUENCE_NAME\" from sequences where \"SEQUENCE_NAME\" like '%" + columnId + "%'";
-            var readerSeqName = ExecuteReader(scriptSelectSequenceName, dbConnection);
+            var readerSeqName = ExecuteReader(scriptSelectSequenceName, dbConnection, transaction);
             var sequenceName = readerSeqName.Read() ? readerSeqName.GetString(0) : throw new Exception("Could not get sequence name in Hana schema");
 
             string scriptSelectCurrentValueId = "select \"" + sequenceName + "\".currval as \"ValueField\"from \"DUMMY\"";
-            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection);
+            var readerId = ExecuteReader(scriptSelectCurrentValueId, dbConnection, transaction);
             if (readerId.Read())
             {
                 var id = readerId.GetInt32(0);

@@ -25,20 +25,22 @@ namespace SimpleQuery.Data.Dialects
 
         public int ExecuteNonQuery(IDbCommand command)
         {
-            var task = Task.Factory.StartNew(command.ExecuteNonQuery);
+            var result = 0;
+            var task = Task.Factory.StartNew(() => result = command.ExecuteNonQuery());
 
-            CloseAssertMessageBox(task);
+            WaitingTask(task);
 
-            return Task.WaitAny(task);
+            return result;
         }
 
         public object ExecuteScalar(IDbCommand command)
         {
-            var task = Task.Factory.StartNew(command.ExecuteScalar);
+            object result = null;
+            var task = Task.Factory.StartNew(() => result = command.ExecuteScalar());
 
-            CloseAssertMessageBox(task);
+            WaitingTask(task);
 
-            return Task.WaitAny(task);
+            return result;
         }
 
         public IDataReader ExecuteReader(IDbCommand command)
@@ -47,25 +49,18 @@ namespace SimpleQuery.Data.Dialects
 
             var task = Task.Factory.StartNew(() => data = command.ExecuteReader());
 
-            CloseAssertMessageBox(task);
-
-            Task.WaitAny(task);
+            WaitingTask(task);
 
             return data;
         }
 
-        private void CloseAssertMessageBox(Task task)
+        private void WaitingTask(Task task)
         {
             while (task.Status <= TaskStatus.Running)
             {
                 if (task.Status == TaskStatus.Running)
                 {
-                    var window = FindWindow(null, "Abort execution?");
-                    var button = FindWindowEx(window, IntPtr.Zero, "Button", "&No");
-                    SendMessage(button, WM_LBUTTONDOWN, 0, 0);
-                    SendMessage(button, WM_LBUTTONUP, 0, 0);
-                    SendMessage(button, WM_LBUTTONDOWN, 0, 0);
-                    SendMessage(button, WM_LBUTTONUP, 0, 0);
+                    CloseAssertMessageBox();
                 }
             }
 
@@ -76,6 +71,16 @@ namespace SimpleQuery.Data.Dialects
                     throw task.Exception;
                 }
             }
+        }
+
+        private void CloseAssertMessageBox()
+        {
+            var window = FindWindow(null, "Abort execution?");
+            var button = FindWindowEx(window, IntPtr.Zero, "Button", "&No");
+            SendMessage(button, WM_LBUTTONDOWN, 0, 0);
+            SendMessage(button, WM_LBUTTONUP, 0, 0);
+            SendMessage(button, WM_LBUTTONDOWN, 0, 0);
+            SendMessage(button, WM_LBUTTONUP, 0, 0);
         }
     }
 }
