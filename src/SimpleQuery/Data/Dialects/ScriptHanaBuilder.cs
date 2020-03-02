@@ -189,7 +189,7 @@ namespace SimpleQuery.Data.Dialects
 
             var keyProperty = GetKeyProperty(allProperties);
 
-            var strBuilderSql = new StringBuilder($"create table \"{entityName}\" (");
+            var strBuilderSql = new StringBuilder($"create column table \"{entityName}\" (");
             foreach (var item in allProperties)
             {
                 if (keyProperty == item)
