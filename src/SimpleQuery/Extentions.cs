@@ -21,27 +21,43 @@ namespace SimpleQuery
         public static int InsertReturningId<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
             where T : class, new()
         {
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
+            try
+            {
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
 
-            if (wasClosed) dbConnection.Open();
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-            var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
+                IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+                var insertCommand = scripBuilder.GetInsertCommand<T>(model, false);
 
-            var command = dbConnection.CreateCommand();
+                var command = dbConnection.CreateCommand();
 
-            if (dbTransaction != null) command.Transaction = dbTransaction;
+                if (dbTransaction != null) command.Transaction = dbTransaction;
 
-            command.CommandText = insertCommand;
-            var rowsCount = ExecuteNonQuery(command);
-            Console.WriteLine($"{rowsCount} affected rows");
+                command.CommandText = insertCommand;
+                var rowsCount = ExecuteNonQuery(command);
+                Console.WriteLine($"{rowsCount} affected rows");
 
-            var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
+                var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
 
-            if (wasClosed) dbConnection.Close();
-
-            return Convert.ToInt32(lastId);
+                return Convert.ToInt32(lastId);
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (dbTransaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
+
         /// <summary>
         /// Insert model in the database
         /// </summary>
@@ -53,28 +69,42 @@ namespace SimpleQuery
         public static T Insert<T>(this IDbConnection dbConnection, T model, bool includeKey = false, IDbTransaction dbTransaction = null)
            where T : class, new()
         {
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-
-            if (wasClosed) dbConnection.Open();
-
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-
-            var command = GetCommandInsert<T>(dbConnection, model, dbTransaction, scripBuilder, includeKey);
-
-            var rowsCount = ExecuteNonQuery(command);
-            Console.WriteLine($"{rowsCount} affected rows");
-
-            var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
-
-            if (wasClosed) dbConnection.Close();
-            var keyProperty = scripBuilder.GetKeyPropertyModel<T>();
-            if (keyProperty != null)
+            try
             {
-                var convertedValue = Convert.ChangeType(lastId, keyProperty.PropertyType);
-                if (convertedValue != null)
-                    keyProperty.SetValue(model, convertedValue);
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
+
+                if (wasClosed) dbConnection.Open();
+
+                IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+
+                var command = GetCommandInsert<T>(dbConnection, model, dbTransaction, scripBuilder, includeKey);
+
+                var rowsCount = ExecuteNonQuery(command);
+                Console.WriteLine($"{rowsCount} affected rows");
+
+                var lastId = scripBuilder.GetLastId<T>(model, dbConnection, dbTransaction);
+
+                var keyProperty = scripBuilder.GetKeyPropertyModel<T>();
+                if (keyProperty != null)
+                {
+                    var convertedValue = Convert.ChangeType(lastId, keyProperty.PropertyType);
+                    if (convertedValue != null)
+                        keyProperty.SetValue(model, convertedValue);
+                }
+
+                return model;
             }
-            return model;
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (dbTransaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         private static IDbCommand GetCommandInsert<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder, bool includeKey = false) where T : class, new()
@@ -122,21 +152,35 @@ namespace SimpleQuery
         public static void Update<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
            where T : class, new()
         {
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
+            try
+            {
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
 
-            if (wasClosed) dbConnection.Open();
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+                IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
 
-            var command = GetCommandUpdate<T>(dbConnection, model, dbTransaction, scripBuilder);
+                var command = GetCommandUpdate<T>(dbConnection, model, dbTransaction, scripBuilder);
 
-            if (dbTransaction != null) command.Transaction = dbTransaction;
+                if (dbTransaction != null) command.Transaction = dbTransaction;
 
-            var rowsCount = ExecuteNonQuery(command);
-            Console.WriteLine($"{rowsCount} affected rows");
-
-            if (wasClosed) dbConnection.Close();
-
+                var rowsCount = ExecuteNonQuery(command);
+                Console.WriteLine($"{rowsCount} affected rows");
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (dbTransaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         private static IDbCommand GetCommandUpdate<T>(IDbConnection dbConnection, T model, IDbTransaction dbTransaction, IScriptBuilder scripBuilder) where T : class, new()
@@ -184,27 +228,41 @@ namespace SimpleQuery
         public static void Delete<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
           where T : class, new()
         {
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
+            try
+            {
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
 
-            if (wasClosed) dbConnection.Open();
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-            var keyProperty = scripBuilder.GetKeyPropertyModel<T>();
-            if (keyProperty == null)
-                throw new Exception("Can't detarminated key property");
-            var keyValue = keyProperty.GetValue(model);
-            var deleteCommandText = scripBuilder.GetDeleteCommand<T>(model, keyValue);
+                IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+                var keyProperty = scripBuilder.GetKeyPropertyModel<T>();
+                if (keyProperty == null)
+                    throw new Exception("Can't detarminated key property");
+                var keyValue = keyProperty.GetValue(model);
+                var deleteCommandText = scripBuilder.GetDeleteCommand<T>(model, keyValue);
 
-            var command = dbConnection.CreateCommand();
+                var command = dbConnection.CreateCommand();
 
-            if (dbTransaction != null) command.Transaction = dbTransaction;
+                if (dbTransaction != null) command.Transaction = dbTransaction;
 
-            command.CommandText = deleteCommandText;
-            var rowsCount = ExecuteNonQuery(command);
-            Console.WriteLine($"{rowsCount} affected rows");
-
-            if (wasClosed) dbConnection.Close();
-
+                command.CommandText = deleteCommandText;
+                var rowsCount = ExecuteNonQuery(command);
+                Console.WriteLine($"{rowsCount} affected rows");
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (dbTransaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         /// <summary>
@@ -237,21 +295,33 @@ namespace SimpleQuery
         public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection)
            where T : class, new()
         {
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
+            try
+            {
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
 
-            if (wasClosed) dbConnection.Open();
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
 
+                IScriptBuilder scriptBuilder = GetScriptBuild(dbConnection);
+                var selectScript = scriptBuilder.GetSelectCommand<T>(new T());
 
-            IScriptBuilder scriptBuilder = GetScriptBuild(dbConnection);
-            var selectScript = scriptBuilder.GetSelectCommand<T>(new T());
+                var reader = scriptBuilder.ExecuteReader(selectScript, dbConnection);
+                var list = GetTypedList<T>(reader);
 
-            var reader = scriptBuilder.ExecuteReader(selectScript, dbConnection);
-            var list = GetTypedList<T>(reader);
-            if (wasClosed) dbConnection.Close();
+                reader.Close();
 
-            reader.Close();
-
-            return list;
+                return list;
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                dbConnection.Close();
+            }
         }
 
         static IEnumerable<T> GetTypedList<T>(IDataReader reader) where T : class, new()
@@ -279,33 +349,47 @@ namespace SimpleQuery
         /// <param name="model">Instance model</param>
         /// <param name="dbTransaction">Transaction database</param>
         /// <returns></returns>
-        public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction)
+        public static IEnumerable<T> GetAll<T>(this IDbConnection dbConnection, T model, IDbTransaction dbTransaction = null)
           where T : class, new()
         {
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-
-            if (wasClosed) dbConnection.Open();
-            
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-            var selectScript = scripBuilder.GetSelectCommand<T>(model);
-
-            var reader = scripBuilder.ExecuteReader(selectScript, dbConnection);
-            var listModel = new List<T>();
-
-            var dataTable = new DataTable();
-            dataTable.Load(reader);
-
-            foreach (DataRow row in dataTable.Rows)
+            try
             {
-                var newModel = GetModelByDataRow<T>(row);
-                listModel.Add(newModel);
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
+
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
+
+                IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+                var selectScript = scripBuilder.GetSelectCommand<T>(model);
+
+                var reader = scripBuilder.ExecuteReader(selectScript, dbConnection, dbTransaction);
+                var listModel = new List<T>();
+
+                var dataTable = new DataTable();
+                dataTable.Load(reader);
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    var newModel = GetModelByDataRow<T>(row);
+                    listModel.Add(newModel);
+                }
+                reader.Close();
+
+                return listModel;
             }
-
-            if (wasClosed) dbConnection.Close();
-
-            reader.Close();
-
-            return listModel;
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (dbTransaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         private static T GetModelByDataRow<T>(DataRow row) where T : class, new()

@@ -17,33 +17,64 @@ namespace SimpleQuery.Data.Dialects
 
         public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
-            var command = dbConnection.CreateCommand();
-            if (transaction != null)
-                command.Transaction = transaction;
-            command.CommandText = commandText;
+            try
+            {
+                var command = dbConnection.CreateCommand();
+                if (transaction != null)
+                    command.Transaction = transaction;
+                command.CommandText = commandText;
 
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed) dbConnection.Open();
-            var rowsCount = Extentions.ExecuteNonQuery(command);
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
+                var rowsCount = Extentions.ExecuteNonQuery(command);
 
-            Console.WriteLine($"{rowsCount} affected rows");
-            if (wasClosed) dbConnection.Close();
+                Console.WriteLine($"{rowsCount} affected rows");
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (transaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction transaction = null)
         {
-            var command = dbConnection.CreateCommand();
-            if (transaction != null) command.Transaction = transaction;
+            try
+            {
+                var command = dbConnection.CreateCommand();
+                if (transaction != null) command.Transaction = transaction;
 
-            command.CommandText = commandText;
+                command.CommandText = commandText;
 
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed) dbConnection.Open();
-            var reader = Extentions.ExecuteReader(command);
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
+                var reader = Extentions.ExecuteReader(command);
 
-            if (wasClosed) dbConnection.Close();
-
-            return reader;
+                return reader;
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (transaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         public string GetCreateTableCommand<T>() where T : class, new()

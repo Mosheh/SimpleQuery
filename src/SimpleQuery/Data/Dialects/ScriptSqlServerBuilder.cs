@@ -19,32 +19,63 @@ namespace SimpleQuery.Data.Dialects
 
         public IDataReader ExecuteReader(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
-            var command = dbConnection.CreateCommand();
-            if (dbTransaction != null) command.Transaction = dbTransaction;
+            try
+            {
+                var command = dbConnection.CreateCommand();
+                if (dbTransaction != null) command.Transaction = dbTransaction;
 
-            command.CommandText = commandText;
+                command.CommandText = commandText;
 
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed) dbConnection.Open();
-            var reader = Extentions.ExecuteReader(command);
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
+                var reader = Extentions.ExecuteReader(command);
 
-            if (wasClosed) dbConnection.Close();
-
-            return reader;
+                return reader;
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (dbTransaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
-            var command = dbConnection.CreateCommand();
-            if (dbTransaction != null)
-                command.Transaction = dbTransaction;
-            command.CommandText = commandText;
+            try
+            {
+                var command = dbConnection.CreateCommand();
+                if (dbTransaction != null)
+                    command.Transaction = dbTransaction;
+                command.CommandText = commandText;
 
-            var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed) dbConnection.Open();
-            var rowsCount = Extentions.ExecuteNonQuery(command);
-            Console.WriteLine($"{rowsCount} affected rows");
-            if (wasClosed) dbConnection.Close();
+                var wasClosed = dbConnection.State == ConnectionState.Closed;
+                if (wasClosed)
+                {
+                    dbConnection.Open();
+                }
+                var rowsCount = Extentions.ExecuteNonQuery(command);
+                Console.WriteLine($"{rowsCount} affected rows");
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException is null ? e : e.InnerException;
+            }
+            finally
+            {
+                if (dbTransaction is null)
+                {
+                    dbConnection.Close();
+                }
+            }
         }
 
         public string GetDeleteCommand<T>(T obj, object key) where T : class, new()

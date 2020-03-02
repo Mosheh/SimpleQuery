@@ -56,14 +56,25 @@ namespace SimpleQuery.Data.Dialects
 
         private void CloseAssertMessageBox(Task task)
         {
-            while (task.Status == TaskStatus.Running)
+            while (task.Status <= TaskStatus.Running)
             {
-                var window = FindWindow(null, "Abort execution?");
-                var button = FindWindowEx(window, IntPtr.Zero, "Button", "&No");
-                SendMessage(button, WM_LBUTTONDOWN, 0, 0);
-                SendMessage(button, WM_LBUTTONUP, 0, 0);
-                SendMessage(button, WM_LBUTTONDOWN, 0, 0);
-                SendMessage(button, WM_LBUTTONUP, 0, 0);
+                if (task.Status == TaskStatus.Running)
+                {
+                    var window = FindWindow(null, "Abort execution?");
+                    var button = FindWindowEx(window, IntPtr.Zero, "Button", "&No");
+                    SendMessage(button, WM_LBUTTONDOWN, 0, 0);
+                    SendMessage(button, WM_LBUTTONUP, 0, 0);
+                    SendMessage(button, WM_LBUTTONDOWN, 0, 0);
+                    SendMessage(button, WM_LBUTTONUP, 0, 0);
+                }
+            }
+
+            if (task.IsFaulted)
+            {
+                if (task.Exception != null)
+                {
+                    throw task.Exception;
+                }
             }
         }
     }
