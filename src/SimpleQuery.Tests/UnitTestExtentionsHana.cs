@@ -26,7 +26,7 @@ namespace SimpleQuery.Tests
             var id = conn.InsertReturningId<Cliente>(cliente);
 
             cliente.Id = id;
-            cliente.Nome = "Moisés 'Miranda";
+            cliente.Nome = "Moisés \\'Miranda";
             conn.Update<Cliente>(cliente);
 
             conn.Execute("drop table \"Cliente\"");
