@@ -242,7 +242,7 @@ namespace SimpleQuery
 
             return rowsCount;
         }
-        
+
         /// <summary>
         /// Get all records from database in typed model
         /// </summary>
@@ -258,25 +258,25 @@ namespace SimpleQuery
 
             if (wasClosed)
                 dbConnection.Open();
-            
+
             var scripBuilder = GetScriptBuild(dbConnection);
             var selectScript = scripBuilder.GetSelectCommand<T>(new T());
-            
+
             var elements = QueryOptionmized(dbConnection, selectScript, GetModel<T>);
-            
+
             if (wasClosed)
                 dbConnection.Close();
 
             return elements;
         }
 
-         static TModel[] QueryOptionmized<TModel>(
-            IDbConnection connection,
-            string command,
-            Func<IDataReader, Dictionary<string, int>, TModel> toObject) where TModel : class, new()
+        static TModel[] QueryOptionmized<TModel>(
+           IDbConnection connection,
+           string command,
+           Func<IDataReader, Dictionary<string, int>, TModel> toObject) where TModel : class, new()
         {
             var quantidadeDeRegistros = QueryCount(connection, command);
-            
+
             var elementos = new TModel[quantidadeDeRegistros];
             var scripBuilder = GetScriptBuild(connection);
 
@@ -289,7 +289,9 @@ namespace SimpleQuery
                     try
                     {
                         var name = rdr.GetName(i);
-                        cachedOrdinal.Add(rdr.GetName(i), rdr.GetOrdinal(name));
+
+                        if (!cachedOrdinal.TryGetValue(name, out var _))
+                            cachedOrdinal.Add(rdr.GetName(i), rdr.GetOrdinal(name));
                     }
                     catch (Exception e)
                     {
@@ -314,39 +316,39 @@ namespace SimpleQuery
             return elementos;
         }
 
-         private static int QueryCount(IDbConnection dbConnection, string command)
-         {
-             var commandCount = "SELECT COUNT(1) FROM ({command}) as a";
+        private static int QueryCount(IDbConnection dbConnection, string command)
+        {
+            var commandCount = $"SELECT COUNT(1) FROM ({command}) as a";
 
-             var qtd = dbConnection.Scalar<int>(command);
+            var qtd = dbConnection.Scalar<int>(commandCount);
 
-             return qtd.FirstOrDefault();
-         }
+            return qtd.FirstOrDefault();
+        }
 
-         private static T GetModel<T>(IDataReader dataReader, Dictionary<string, int> record) where T : class, new()
-         {
-             var model = new T();
+        private static T GetModel<T>(IDataReader dataReader, Dictionary<string, int> record) where T : class, new()
+        {
+            var model = new T();
 
-             var properties = model
-                 .GetType()
-                 .GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var properties = model
+                .GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
-             foreach (var item in properties)
-             {
-                 if (!record.TryGetValue(item.Name, out var fieldIndex))
-                 {
-                     continue;
-                 }
-                 
-                 var rowValue = dataReader[fieldIndex];
-                 var value = ChangeType(rowValue, item.PropertyType);
+            foreach (var item in properties)
+            {
+                if (!record.TryGetValue(item.Name, out var fieldIndex))
+                {
+                    continue;
+                }
 
-                 item.SetValue(model,  dataReader.IsDBNull(fieldIndex) ? null : value);
-             }
+                var rowValue = dataReader[fieldIndex];
+                var value = ChangeType(rowValue, item.PropertyType);
 
-             return model;
-         }
-         
+                item.SetValue(model, dataReader.IsDBNull(fieldIndex) ? null : value);
+            }
+
+            return model;
+        }
+
         private static T GetModelByDataRow<T>(DataRow row) where T : class, new()
         {
             var model = new T();
@@ -429,5 +431,5 @@ namespace SimpleQuery
                 return new ScriptAnsiBuilder();
         }
     }
-    
+
 }

@@ -171,13 +171,24 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void TestSelectOperationHana()
         {
+            IScriptBuilder builder = new ScriptHanaBuilder();
             var hanaConnection = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
             hanaConnection.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             hanaConnection.Open();
+
+            try
+            {
+                builder.Execute("drop table \"Cliente\"", hanaConnection);
+            }
+            catch (Exception)
+            {
+
+            }
+
             var trans = hanaConnection.BeginTransaction();
             using (var conn = hanaConnection)
             {
-                IScriptBuilder builder = new ScriptHanaBuilder();
+                
 
                 var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
                 var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
