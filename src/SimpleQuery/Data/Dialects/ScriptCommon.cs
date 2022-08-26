@@ -126,5 +126,12 @@ namespace SimpleQuery.Data.Dialects
             typeof(DateTime?)
         }.Contains(t);
         }
+        
+        protected string GetCountqueryComand<T>(T obj) where T : class, new()
+        {
+            var entityName = GetEntityName<T>();
+            
+            return $"select *  from \"{entityName}\" ";
+        }
     }
 }

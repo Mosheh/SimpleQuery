@@ -28,7 +28,7 @@ namespace SimpleQuery.Data.Dialects
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
             var rowsCount = command.ExecuteNonQuery();
-            var dataTable = new DataTable();
+            
             Console.WriteLine($"{rowsCount} affected rows");
             if (wasClosed) dbConnection.Close();
         }
@@ -89,6 +89,11 @@ namespace SimpleQuery.Data.Dialects
         private string GetSequenceName(string entityName, string columnName)
         {
             return $"sequence_{entityName}_{columnName}".ToLower();
+        }
+
+        public string GetCountCommand<T>(T obj, Expression<Func<T, bool>> expression = null) where T : class, new()
+        {
+            throw new NotImplementedException();
         }
 
         public string GetDeleteCommand<T>(T obj, object key) where T : class, new()

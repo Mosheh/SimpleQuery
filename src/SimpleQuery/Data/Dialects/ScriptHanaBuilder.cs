@@ -45,7 +45,7 @@ namespace SimpleQuery.Data.Dialects
             var wasClosed = dbConnection.State == ConnectionState.Closed;
             if (wasClosed) dbConnection.Open();
             var rowsCount = command.ExecuteNonQuery();
-            var dataTable = new DataTable();
+            
             Console.WriteLine($"{rowsCount} affected rows");
             if (wasClosed) dbConnection.Close();
         }
@@ -271,6 +271,18 @@ namespace SimpleQuery.Data.Dialects
             var select = GetSelectCommand<T>(obj);
             var where = GetWhereCommand<T>(expression);
             return select + " " + where;
+        }
+        
+        public string GetCountCommand<T>(T obj, Expression<Func<T, bool>> expression = null) where T : class, new()
+        {
+            var select = GetCountqueryComand<T>(obj);
+            
+            if (expression is null)
+            {
+                return select;
+            }
+            
+            return select + " " + GetWhereCommand<T>(expression);;
         }
 
         public Tuple<string, IEnumerable<DbSimpleParameter>> GetInsertCommandParameters<T>(T obj, bool includeKey = false) where T : class, new()
