@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace SimpleQuery
 {
@@ -318,11 +319,34 @@ namespace SimpleQuery
 
         private static int QueryCount(IDbConnection dbConnection, string command)
         {
-            var commandCount = $"SELECT COUNT(1) FROM ({command}) as a";
+            var semOrderBy = SubStringInicioAte(command, "ORDER BY");
+            var commandCount = $"SELECT COUNT(1) FROM ({semOrderBy}) as a";
 
             var qtd = dbConnection.Scalar<int>(commandCount);
 
             return qtd.FirstOrDefault();
+        }
+        
+        public static string SubStringInicioAte(this string valor, string textoDoIndice)
+        {
+            var indiceFinal = valor?.IndexOf(textoDoIndice, StringComparison.InvariantCultureIgnoreCase) ?? -1;
+
+            return indiceFinal == -1 ? valor : SubStringInicioAte(valor, indiceFinal);
+        }
+
+        public static string SubStringInicioAte(this string valor, int indiceFinal)
+        {
+            if (string.IsNullOrWhiteSpace(valor))
+                return string.Empty;
+
+            if (indiceFinal == -1)
+            {
+                return valor;
+            }
+
+            return valor
+                .Substring(0, indiceFinal)
+                .Trim();
         }
 
         private static T GetModel<T>(IDataReader dataReader, Dictionary<string, int> record) where T : class, new()
