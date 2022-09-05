@@ -40,6 +40,7 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <param name="obj">Instance model</param>
         /// <returns></returns>
         string GetSelectCommand<T>(T obj) where T : class, new();
+        
 
         /// <summary>
         /// Return table name based in Table Attribute or Class name
@@ -55,6 +56,14 @@ namespace SimpleQuery.Domain.Data.Dialects
         /// <param name="obj">Instance model</param>
         /// <returns></returns>
         string GetSelectCommand<T>(T obj, Expression<Func<T, bool>> expression) where T : class, new();
+        
+        /// <summary>
+        /// Return count from instance model
+        /// </summary>
+        /// <typeparam name="T">Class type</typeparam>
+        /// <param name="obj">Instance model</param>
+        /// <returns></returns>
+        string GetCountCommand<T>(T obj, Expression<Func<T, bool>> expression = null) where T : class, new();
 
         /// <summary>
         /// Return delete command from instance model

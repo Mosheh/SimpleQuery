@@ -40,14 +40,19 @@ namespace SimpleQuery.Data.Dialects
         public void Execute(string commandText, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
             var command = dbConnection.CreateCommand();
+            
             if (dbTransaction != null)
                 command.Transaction = dbTransaction;
+            
             command.CommandText = commandText;
 
             var wasClosed = dbConnection.State == ConnectionState.Closed;
-            if (wasClosed) dbConnection.Open();
+            
+            if (wasClosed) 
+                dbConnection.Open();
+            
             var rowsCount = command.ExecuteNonQuery();
-            var dataTable = new DataTable();
+            
             Console.WriteLine($"{rowsCount} affected rows");
             if (wasClosed) dbConnection.Close();
         }
@@ -156,6 +161,18 @@ namespace SimpleQuery.Data.Dialects
 
             var sql = strBuilderSql.ToString();
             return sql;
+        }
+
+        public string GetCountCommand<T>(T obj, Expression<Func<T, bool>> expression = null) where T : class, new()
+        {
+            var select = GetCountqueryComand<T>(obj);
+            
+            if (expression is null)
+            {
+                return select;
+            }
+            
+            return select + " " + GetWhereCommand<T>(expression);;
         }
 
         public string GetUpdateCommand<T>(T obj) where T : class, new()

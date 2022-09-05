@@ -17,6 +17,15 @@ namespace SimpleQuery.Tests
             var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLServer"].ConnectionString);
             var scriptBuilder = conn.GetScriptBuild();
 
+            try
+            {
+                scriptBuilder.Execute("drop table \"Cliente\"", conn);
+            }
+            catch (Exception)
+            {
+
+            }
+            
             var cliente = new Cliente() { Nome = "Miranda" };
 
             var createTableScript = scriptBuilder.GetCreateTableCommand<Cliente>();

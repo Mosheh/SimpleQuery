@@ -108,6 +108,11 @@ namespace SimpleQuery.Data.Dialects
             }
         }
 
+        public string GetCountCommand<T>(T obj, Expression<Func<T, bool>> expression = null) where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
         public string GetDeleteCommand<T>(T obj, object key) where T : class, new()
         {
             var allProperties = obj.GetType().GetProperties();

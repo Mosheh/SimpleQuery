@@ -1,11 +1,7 @@
-﻿using SimpleQuery.Domain.Data.Dialects;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleQuery
 {
@@ -24,32 +20,18 @@ namespace SimpleQuery
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 
             if (wasClosed) dbConnection.Open();
-
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
+            
             var instanceModel = new T();
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-            var selectScript = scripBuilder.GetSelectCommand<T>(instanceModel);
-            var whereScript = scripBuilder.GetWhereCommand<T>(whereExpression);
-            var selectAndWhere = selectScript + " " + whereScript;
-            var reader = scripBuilder.ExecuteReader(selectAndWhere, dbConnection);
-            var listModel = new List<T>();
+            var scripBuilder = GetScriptBuild(dbConnection);
+            var selectScript = scripBuilder.GetSelectCommand<T>(instanceModel, whereExpression);
 
-            var dataTable = new DataTable();
-            dataTable.Load(reader);
+            var elements = QueryOptionmized<T>(dbConnection, selectScript, GetModel<T>);
+            
+            if (wasClosed) 
+                dbConnection.Close();
 
-            foreach (DataRow row in dataTable.Rows)
-            {
-                var newModel = GetModelByDataRow<T>(row);
-                listModel.Add(newModel);
-            }
-
-            if (wasClosed) dbConnection.Close();
-
-            reader.Close();
-
-            return listModel;
+            return elements;
         }
         /// <summary>
         /// Get type list model
@@ -65,29 +47,12 @@ namespace SimpleQuery
 
             if (wasClosed) dbConnection.Open();
 
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
-            var instanceModel = new T();
+            var elements = QueryOptionmized<T>(dbConnection, sqlCommandText, GetModel<T>);
 
-            var command = dbConnection.CreateCommand();
-            command.CommandText = sqlCommandText;
-            var reader = command.ExecuteReader();
-            var listModel = new List<T>();
+            if (wasClosed) 
+                dbConnection.Close();
 
-            var dataTable = new DataTable();
-            dataTable.Load(reader);
-
-            foreach (DataRow row in dataTable.Rows)
-            {
-                var newModel = GetModelByDataRow<T>(row);
-                listModel.Add(newModel);
-            }
-
-            if (wasClosed) dbConnection.Close();
-
-            reader.Close();
-
-            return listModel;
+            return elements;
         }
         /// <summary>
         /// Get typed list model
@@ -101,30 +66,15 @@ namespace SimpleQuery
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 
-            if (wasClosed) dbConnection.Open();
+            if (wasClosed) 
+                dbConnection.Open();
+          
+            var elements = QueryOptionmized<T>(dbConnection, commandText, GetModel<T>);
 
-            var type = typeof(T);
-            var cacheType = typeof(List<T>);
-            var instanceModel = new T();
+            if (wasClosed) 
+                dbConnection.Close();
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
-            var reader = scripBuilder.ExecuteReader(commandText, dbConnection);
-            var listModel = new List<T>();
-
-            var dataTable = new DataTable();
-            dataTable.Load(reader);
-
-            foreach (DataRow row in dataTable.Rows)
-            {
-                var newModel = GetModelByDataRow<T>(row);
-                listModel.Add(newModel);
-            }
-
-            if (wasClosed) dbConnection.Close();
-
-            reader.Close();
-
-            return listModel;
+            return elements;
         }
         /// <summary>
         /// Get primitive types as List
@@ -139,13 +89,15 @@ namespace SimpleQuery
         {
             var wasClosed = dbConnection.State == ConnectionState.Closed;
 
-            if (wasClosed) dbConnection.Open();
+            if (wasClosed)
+                dbConnection.Open();
 
             var type = typeof(T);
             var list = new List< T>();
 
-            IScriptBuilder scripBuilder = GetScriptBuild(dbConnection);
+            var scripBuilder = GetScriptBuild(dbConnection);
             var reader = scripBuilder.ExecuteReader(commandText, dbConnection);
+            
             while (reader.Read())
             {
 
@@ -177,7 +129,8 @@ namespace SimpleQuery
                 list.Add((T)objectRead);
             }
 
-            if (wasClosed) dbConnection.Close();
+            if (wasClosed) 
+                dbConnection.Close();
 
             reader.Close();
 

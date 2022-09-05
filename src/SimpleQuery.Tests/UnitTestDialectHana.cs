@@ -171,13 +171,24 @@ namespace SimpleQuery.Tests
         [TestMethod]
         public void TestSelectOperationHana()
         {
+            IScriptBuilder builder = new ScriptHanaBuilder();
             var hanaConnection = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
             hanaConnection.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
             hanaConnection.Open();
+
+            try
+            {
+                builder.Execute("drop table \"Cliente\"", hanaConnection);
+            }
+            catch (Exception)
+            {
+
+            }
+
             var trans = hanaConnection.BeginTransaction();
             using (var conn = hanaConnection)
             {
-                IScriptBuilder builder = new ScriptHanaBuilder();
+                
 
                 var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
                 var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
@@ -200,6 +211,49 @@ namespace SimpleQuery.Tests
         }
 
         [TestMethod]
+        public void TestSelectOperationHanaWithQuery()
+        {
+            IScriptBuilder builder = new ScriptHanaBuilder();
+            var hanaConnection = System.Data.Common.DbProviderFactories.GetFactory("Sap.Data.Hana").CreateConnection();
+            hanaConnection.ConnectionString = ConfigurationManager.ConnectionStrings["hana"].ConnectionString;
+            hanaConnection.Open();
+
+            try
+            {
+                builder.Execute("drop table \"Cliente\"", hanaConnection);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            var trans = hanaConnection.BeginTransaction();
+            using (var conn = hanaConnection)
+            {
+
+
+                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+                var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
+
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
+                var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
+                var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
+                builder.Execute(createTableScript, conn);
+                builder.Execute(insertScript1, conn);
+                builder.Execute(insertScript2, conn);
+
+                var clientes = conn.Select<Cliente>("Select * From \"Cliente\" Order By \"Id\"");
+                Assert.AreEqual(2, clientes.Count());
+                Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
+                Assert.AreEqual("José", clientes.ToList()[1].Nome);
+
+                trans.Rollback();
+                builder.Execute("drop table \"Cliente\"", hanaConnection);
+            }
+        }
+
+
+            [TestMethod]
         public void TestHanaCreateTableScript()
         {
             IScriptBuilder builder = new ScriptHanaBuilder();

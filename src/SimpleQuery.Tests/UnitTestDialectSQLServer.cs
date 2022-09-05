@@ -284,6 +284,48 @@ namespace SimpleQuery.Tests
                 }
             }
         }
+        
+        
+
+        [TestMethod]
+        public void TestSelectOperationHanaWithQuery()
+        {
+            IScriptBuilder builder = new ScriptSqlServerBuilder();
+            var sqlConnection = new SqlConnection(connstring);
+            sqlConnection.Open();
+
+            try
+            {
+                builder.Execute("drop table \"Cliente\"", sqlConnection);
+            }
+            catch (Exception)
+            {
+
+            }
+            
+            using (var conn = sqlConnection)
+            {
+
+
+                var cliente = new Cliente() { Id = 1, Nome = "Moisés", Ativo = true };
+                var cliente2 = new Cliente() { Id = 2, Nome = "José", Ativo = true };
+
+                var createTableScript = builder.GetCreateTableCommand<Cliente>();
+                var insertScript1 = builder.GetInsertCommand<Cliente>(cliente);
+                var insertScript2 = builder.GetInsertCommand<Cliente>(cliente2);
+                builder.Execute(createTableScript, conn);
+                builder.Execute(insertScript1, conn);
+                builder.Execute(insertScript2, conn);
+
+                var clientes = conn.Select<Cliente>("Select * From \"Cliente\" Order By \"Id\"");
+                Assert.AreEqual(2, clientes.Count());
+                Assert.AreEqual("Moisés", clientes.ToList()[0].Nome);
+                Assert.AreEqual("José", clientes.ToList()[1].Nome);
+
+                builder.Execute("drop table \"Cliente\"", sqlConnection);
+            }
+        }
+        
         public string connstring => ConfigurationManager.ConnectionStrings["sqlserver"].ConnectionString;
 
 
